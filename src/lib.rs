@@ -19,10 +19,10 @@ fn crdt_apply_from_update(crdt: Vec<u8>, update: Vec<u8>) -> Vec<u8> {
     let doc: Doc = Doc::new();
     let mut txn: Transaction = doc.transact();
     // Rehydrate DB state vector as update into a Doc
-    txn.apply_update(Update::decode_v2(&crdt));
+    txn.apply_update(Update::decode_v2(&crdt).unwrap());
 
     // Apply the "update" from an external client
-    txn.apply_update(Update::decode_v2(&update));
+    txn.apply_update(Update::decode_v2(&update).unwrap());
 
     // Return the updated state
     doc.encode_state_as_update_v2(&StateVector::default())
@@ -49,7 +49,7 @@ fn test_crdt_text_show(crdt: Vec<u8>, key: &str) -> String {
     let doc: Doc = Doc::new();
     let mut txn: Transaction = doc.transact();
     // Set up initial state from
-    txn.apply_update(Update::decode_v2(&crdt));
+    txn.apply_update(Update::decode_v2(&crdt).unwrap());
     let root: Text = txn.get_text(key);
     root.to_string()
 }
@@ -88,7 +88,7 @@ mod tests {
 
         // A computes differential update (A -> B) from B's state vector
         let update_a_to_b_serialized: Vec<u8> =
-            txn.encode_diff_v1(&StateVector::decode_v1(&state_vector_serialized));
+            txn.encode_diff_v1(&StateVector::decode_v1(&state_vector_serialized).unwrap());
 
         // <A sends update for B's state back to B>
 
@@ -103,7 +103,7 @@ mod tests {
 
         // both update and state vector are serializable, we can pass the over the wire
         // now apply update to a remote document (B)
-        remote_txn.apply_update(Update::decode_v1(update_a_to_b_serialized.as_slice()));
+        remote_txn.apply_update(Update::decode_v1(update_a_to_b_serialized.as_slice()).unwrap());
 
         // Confirm A and B are in sync
         let remote_root = remote_txn.get_text("root-name");

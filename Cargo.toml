@@ -16,8 +16,8 @@ pg_test = []
 pgx = "0.6.0-alpha.0"
 serde = "1.0"
 itertools = "0.10.3"
-yrs = "0.9.3"
-lib0 = { version = "0.9.2", features=["serde", "serde_json"] }
+yrs = "0.12.2"
+lib0 = { version = "0.12.2", features=["serde", "serde_json"] }
 
 [dev-dependencies]
 pgx-tests = "0.6.0-alpha.0"
