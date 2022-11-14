@@ -9,17 +9,18 @@ crate-type = ["cdylib"]
 [features]
 default = ["pg14"]
 pg14 = ["pgx/pg14", "pgx-tests/pg14" ]
+pg15 = ["pgx/pg15", "pgx-tests/pg15" ]
 pg_test = []
 
 [dependencies]
-pgx = "0.4.4"
+pgx = "0.6.0-alpha.0"
 serde = "1.0"
 itertools = "0.10.3"
 yrs = "0.9.3"
 lib0 = { version = "0.9.2", features=["serde", "serde_json"] }
 
 [dev-dependencies]
-pgx-tests = "0.4.2"
+pgx-tests = "0.6.0-alpha.0"
 
 [profile.dev]
 panic = "unwind"
