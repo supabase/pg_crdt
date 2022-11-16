@@ -13,64 +13,18 @@ The database's internal representation of a CRDT Doc is the Doc's state vector e
 
 ## API
 
-### crdt_new()
+### crdt.new_ydoc()::crdt.ydoc
 
-Creates a new, empty, CRDT document
+Creates a new, empty, Yjs document (YDoc)
 
-### crdt_apply_from_update(crdt bytea, update bytea)
+### crdt.merge(crdt.ydoc, crdt.ydoc)::crdt.ydoc
 
-Applies *update* (from a remote client) to *crdt*
+Merges two documents into one. 
 
-## Test Helpers
+Synonymous to the `||` operator available in the `crdt` schema.
 
-### test_crdt_text_push(key text, val text)
+### crdt.merge(crdt.ydoc, crdt.yupdate)::crdt.ydoc
 
-Returns a "simulated" update vector from a remote client where value *val* was pushed to text key *key*
+Applies an update to a document. `YUpdate` can be created by casting byte array (`bytea`) to `crdt.yupdate`
 
-### test_crdt_text_show(crdt bytea, key text)
-
-Displays the text associated with *key* within a Doc
-
-
-## Usage
-
-```sql
--- Create a table to store CRDT
-create table my_docs (
-	id int primary key,
-	crdt bytea not null default crdt_new()
-);
-
--- Insert a row
-insert into my_docs(id, crdt) values (1, default);
-
--- Review CRDT contents
-select test_crdt_text_show(crdt, 'root') from my_docs where id = 1;
--- OUTPUT: ""
-
--- Apply an update from a remote client
-update my_docs
-	set crdt = crdt_apply_from_update(
-		crdt,
-		-- simulated update vector from client containing string "foo"
-		test_crdt_text_push('root', 'foo')
-	)
-	where id = 1;
-
--- Review CRDT contents
-select test_crdt_text_show(crdt, 'root') from my_docs where id = 1;
--- OUTPUT: "foo"
-
--- Apply another update from a remote client
-update my_docs
-	set crdt = crdt_apply_from_update(
-		crdt,
-		-- simulated update vector from client containing string "bar"
-		test_crdt_text_push('root', 'bar')
-	)
-	where id = 1;
-
--- Review CRDT contents
-select test_crdt_text_show(crdt, 'root') from my_docs where id = 1;
--- OUTPUT: "foobar"
-```
+Synonymous to the `||` operator available in the `crdt` schema.
