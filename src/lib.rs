@@ -60,7 +60,7 @@ macro_rules! serialization_primitives {
 
             fn output(&self, buffer: &mut StringInfo) {
                 let vec: Vec<u8> = self.into();
-                buffer
+                let _ = buffer
                     .write(base64::encode(vec).as_bytes())
                     .expect("can't encode");
             }
