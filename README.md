@@ -28,3 +28,19 @@ Synonymous to the `||` operator available in the `crdt` schema.
 Applies an update to a document. `YUpdate` can be created by casting byte array (`bytea`) to `crdt.yupdate`
 
 Synonymous to the `||` operator available in the `crdt` schema.
+
+### crdt.new_autodoc()::crdt.autodoc
+
+Creates a new, empty, Automerge document
+
+### crdt.merge(crdt.autodoc, crdt.autodoc)::crdt.autodoc
+
+Merges two documents into one. 
+
+Synonymous to the `||` operator available in the `crdt` schema.
+
+### crdt.merge(crdt.autodoc, crdt.autochange)::crdt.autodoc
+
+Applies an update to a document. `AutoChange` can be created by casting byte array (`bytea`) to `crdt.autochange`
+
+Synonymous to the `||` operator available in the `crdt` schema.
