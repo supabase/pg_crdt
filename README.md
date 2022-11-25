@@ -2,11 +2,13 @@
 
 A minimal POC for CRDT support in Postgres.
 
-Note: this POC was "least effort" set up to test compatibilty between pgx/yrs/postgres. It is not intended to have a user friendly, complete, or fully correct interface.
+Note: this POC was "least effort" set up to test compatibilty between pgx/yrs/postgres. It is not intended to have a
+user friendly, complete, or fully correct interface.
 
 ## Design
 
-The database's internal representation of a CRDT Doc is the Doc's state vector encoded as an update. This format can be rehydrated to apply updates. It is also what new clients need first when they join the shared data structure.
+The database's internal representation of a CRDT Doc is the Doc's state vector encoded as an update. This format can be
+rehydrated to apply updates. It is also what new clients need first when they join the shared data structure.
 
 - When clients join a Doc, initial state is queried from a table
 - When updates from remote clients ocurr, realtime can broadcast the changes to subscribers
