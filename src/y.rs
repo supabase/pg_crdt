@@ -1,3 +1,4 @@
+use crate::serialization_primitives;
 use pgx::*;
 use serde::de::{Error, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -29,71 +30,6 @@ extension_sql!(
 #[inoutfuncs]
 #[sendrecvfuncs]
 pub struct YDoc(Doc);
-
-impl Serialize for YDoc {
-    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
-    where
-        S: Serializer,
-    {
-        let vec: Vec<u8> = self.into();
-        serializer.serialize_bytes(&vec)
-    }
-}
-
-impl<'de> Deserialize<'de> for YDoc {
-    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct V;
-        impl<'v> Visitor<'v> for V {
-            type Value = YDoc;
-
-            fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-                formatter.write_str("expected YDoc")
-            }
-
-            fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
-            where
-                E: Error,
-            {
-                Self::Value::try_from(v).map_err(E::custom)
-            }
-        }
-        deserializer.deserialize_bytes(V)
-    }
-}
-
-impl InOutFuncs for YDoc {
-    fn input(input: &cstr_core::CStr) -> Self
-    where
-        Self: Sized,
-    {
-        let s = input.to_string_lossy();
-        base64::decode(s.as_ref())
-            .expect("invalid base64")
-            .as_slice()
-            .try_into()
-            .expect("invalid YDoc (text-encoded)")
-    }
-
-    fn output(&self, buffer: &mut StringInfo) {
-        let vec: Vec<u8> = self.into();
-        buffer
-            .write(base64::encode(vec).as_bytes())
-            .expect("can't output YDoc");
-    }
-}
-
-impl SendRecvFuncs for YDoc {
-    fn send(&self) -> Vec<u8> {
-        self.into()
-    }
-
-    fn recv(buffer: &[u8]) -> Self {
-        buffer.try_into().expect("invalid YDoc")
-    }
-}
 
 impl YDoc {
     fn new() -> Self {
@@ -139,75 +75,12 @@ impl TryFrom<&YDoc> for Update {
     }
 }
 
+serialization_primitives!(YDoc);
+
 #[derive(PostgresType)]
 #[inoutfuncs]
 #[sendrecvfuncs]
 pub struct YUpdate(Update);
-
-impl Serialize for YUpdate {
-    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
-    where
-        S: Serializer,
-    {
-        let vec: Vec<u8> = self.into();
-        serializer.serialize_bytes(&vec)
-    }
-}
-
-impl<'de> Deserialize<'de> for YUpdate {
-    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct V;
-        impl<'v> Visitor<'v> for V {
-            type Value = YUpdate;
-
-            fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-                formatter.write_str("expected YUpdate")
-            }
-
-            fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
-            where
-                E: Error,
-            {
-                Self::Value::try_from(v).map_err(E::custom)
-            }
-        }
-        deserializer.deserialize_bytes(V)
-    }
-}
-
-impl InOutFuncs for YUpdate {
-    fn input(input: &cstr_core::CStr) -> Self
-    where
-        Self: Sized,
-    {
-        let s = input.to_string_lossy();
-        base64::decode(s.as_ref())
-            .expect("invalid base64")
-            .as_slice()
-            .try_into()
-            .expect("invalid YUpdate (text-encoded)")
-    }
-
-    fn output(&self, buffer: &mut StringInfo) {
-        let vec: Vec<u8> = self.into();
-        buffer
-            .write(base64::encode(vec).as_bytes())
-            .expect("can't output YUpdate");
-    }
-}
-
-impl SendRecvFuncs for YUpdate {
-    fn send(&self) -> Vec<u8> {
-        self.into()
-    }
-
-    fn recv(buffer: &[u8]) -> Self {
-        buffer.try_into().expect("invalid YUpdate")
-    }
-}
 
 impl TryFrom<&[u8]> for YUpdate {
     type Error = anyhow::Error;
@@ -222,6 +95,8 @@ impl From<&YUpdate> for Vec<u8> {
         update.0.encode_v1()
     }
 }
+
+serialization_primitives!(YUpdate);
 
 /// Creates an empty Yjs document
 #[pg_extern]

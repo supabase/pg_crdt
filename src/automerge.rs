@@ -1,3 +1,4 @@
+use crate::serialization_primitives;
 use automerge::{Automerge, Change};
 use pgx::*;
 use serde::de::{Error, Visitor};
@@ -27,71 +28,6 @@ extension_sql!(
 #[inoutfuncs]
 #[sendrecvfuncs]
 pub struct AutoDoc(Automerge);
-
-impl Serialize for AutoDoc {
-    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
-    where
-        S: Serializer,
-    {
-        let vec: Vec<u8> = self.into();
-        serializer.serialize_bytes(&vec)
-    }
-}
-
-impl<'de> Deserialize<'de> for AutoDoc {
-    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct V;
-        impl<'v> Visitor<'v> for V {
-            type Value = AutoDoc;
-
-            fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-                formatter.write_str("expected AutoDoc")
-            }
-
-            fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
-            where
-                E: Error,
-            {
-                Self::Value::try_from(v).map_err(E::custom)
-            }
-        }
-        deserializer.deserialize_bytes(V)
-    }
-}
-
-impl InOutFuncs for AutoDoc {
-    fn input(input: &cstr_core::CStr) -> Self
-    where
-        Self: Sized,
-    {
-        let s = input.to_string_lossy();
-        base64::decode(s.as_ref())
-            .expect("invalid base64")
-            .as_slice()
-            .try_into()
-            .expect("invalid AutoDoc (text-encoded)")
-    }
-
-    fn output(&self, buffer: &mut StringInfo) {
-        let vec: Vec<u8> = self.into();
-        buffer
-            .write(base64::encode(vec).as_bytes())
-            .expect("can't output AutoDoc");
-    }
-}
-
-impl SendRecvFuncs for AutoDoc {
-    fn send(&self) -> Vec<u8> {
-        self.into()
-    }
-
-    fn recv(buffer: &[u8]) -> Self {
-        buffer.try_into().expect("invalid AutoDoc")
-    }
-}
 
 impl AutoDoc {
     fn new() -> Self {
@@ -124,75 +60,12 @@ impl From<&AutoDoc> for Vec<u8> {
     }
 }
 
+serialization_primitives!(AutoDoc);
+
 #[derive(PostgresType)]
 #[inoutfuncs]
 #[sendrecvfuncs]
 pub struct AutoChange(Change);
-
-impl Serialize for AutoChange {
-    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
-    where
-        S: Serializer,
-    {
-        let vec: Vec<u8> = self.into();
-        serializer.serialize_bytes(&vec)
-    }
-}
-
-impl<'de> Deserialize<'de> for AutoChange {
-    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct V;
-        impl<'v> Visitor<'v> for V {
-            type Value = AutoChange;
-
-            fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-                formatter.write_str("expected AutoChange")
-            }
-
-            fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
-            where
-                E: Error,
-            {
-                Self::Value::try_from(v).map_err(E::custom)
-            }
-        }
-        deserializer.deserialize_bytes(V)
-    }
-}
-
-impl InOutFuncs for AutoChange {
-    fn input(input: &cstr_core::CStr) -> Self
-    where
-        Self: Sized,
-    {
-        let s = input.to_string_lossy();
-        base64::decode(s.as_ref())
-            .expect("invalid base64")
-            .as_slice()
-            .try_into()
-            .expect("invalid AutoChange (text-encoded)")
-    }
-
-    fn output(&self, buffer: &mut StringInfo) {
-        let vec: Vec<u8> = self.into();
-        buffer
-            .write(base64::encode(vec).as_bytes())
-            .expect("can't output AutoChange");
-    }
-}
-
-impl SendRecvFuncs for AutoChange {
-    fn send(&self) -> Vec<u8> {
-        self.into()
-    }
-
-    fn recv(buffer: &[u8]) -> Self {
-        buffer.try_into().expect("invalid AutoChange")
-    }
-}
 
 impl TryFrom<&[u8]> for AutoChange {
     type Error = anyhow::Error;
@@ -207,6 +80,8 @@ impl From<&AutoChange> for Vec<u8> {
         change.0.raw_bytes().to_vec()
     }
 }
+
+serialization_primitives!(AutoChange);
 
 /// Creates an empty Automerge document
 #[pg_extern]
