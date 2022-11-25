@@ -13,7 +13,34 @@ rehydrated to apply updates. It is also what new clients need first when they jo
 - When clients join a Doc, initial state is queried from a table
 - When updates from remote clients ocurr, realtime can broadcast the changes to subscribers
 
-## API
+## Usage
+
+```sql
+# Defining a CRDT column
+create table posts (
+  id serial primary key,
+  content crdt.ydoc default crdt.new_ydoc()
+);
+
+# Inserting new CRDT types.
+insert into posts (content)
+values (crdt.new_ydoc())
+returning id;
+
+# Update a CRDT, where change is a CRDT doc change
+update posts 
+set content = crdt.merge(content, change)
+where id = 1;
+
+# With the "||" operator, requires the search_path to be updated:
+# set search_path to public,crdt;
+update posts 
+set content = content || crdt.new_ydoc()
+where id = 1;
+
+```
+
+## API: Yjs/Yrs
 
 ### crdt.new_ydoc()::crdt.ydoc
 
@@ -30,6 +57,8 @@ Synonymous to the `||` operator available in the `crdt` schema.
 Applies an update to a document. `YUpdate` can be created by casting byte array (`bytea`) to `crdt.yupdate`
 
 Synonymous to the `||` operator available in the `crdt` schema.
+
+## API: Automerge
 
 ### crdt.new_autodoc()::crdt.autodoc
 
