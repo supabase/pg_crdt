@@ -1,4 +1,4 @@
-use crate::serialization_primitives;
+use crate::{read_internal, serialization_primitives};
 use automerge::{Automerge, Change};
 use pgx::*;
 use serde::de::{Error, Visitor};
@@ -26,7 +26,6 @@ extension_sql!(
 
 #[derive(PostgresType)]
 #[inoutfuncs]
-#[sendrecvfuncs]
 pub struct AutoDoc(Automerge);
 
 impl AutoDoc {
@@ -64,7 +63,6 @@ serialization_primitives!(AutoDoc);
 
 #[derive(PostgresType)]
 #[inoutfuncs]
-#[sendrecvfuncs]
 pub struct AutoChange(Change);
 
 impl TryFrom<&[u8]> for AutoChange {
@@ -156,6 +154,30 @@ fn autochange_from_bytea(array: Vec<u8>) -> AutoChange {
         .as_slice()
         .try_into()
         .expect("invalid AutoChange (binary)")
+}
+
+#[pg_extern(immutable)]
+#[search_path(@extschema@)]
+fn autodoc_send(doc: AutoDoc) -> Vec<u8> {
+    (&doc).into()
+}
+
+#[pg_extern(immutable)]
+#[search_path(@extschema@)]
+fn autodoc_receive(internal: Internal) -> AutoDoc {
+    AutoDoc::try_from(read_internal(internal).as_slice()).expect("invalid AutoDoc")
+}
+
+#[pg_extern(immutable)]
+#[search_path(@extschema@)]
+fn autochange_send(change: AutoChange) -> Vec<u8> {
+    (&change).into()
+}
+
+#[pg_extern(immutable)]
+#[search_path(@extschema@)]
+fn autochange_receive(internal: Internal) -> AutoChange {
+    AutoChange::try_from(read_internal(internal).as_slice()).expect("invalid AutoChange")
 }
 
 #[cfg(any(test, feature = "pg_test"))]

@@ -2,6 +2,18 @@ use pgx::*;
 
 pg_module_magic!();
 
+extension_sql!(
+    r#"
+    ALTER TYPE crdt.ydoc SET (SEND = ydoc_send, RECEIVE = ydoc_receive);
+    ALTER TYPE crdt.yupdate SET (SEND = yupdate_send, RECEIVE = yupdate_receive);
+    ALTER TYPE crdt.autodoc SET (SEND = autodoc_send, RECEIVE = autodoc_receive);
+    ALTER TYPE crdt.autochange SET (SEND = autochange_send, RECEIVE = autochange_receive);
+
+    "#,
+    name = "binary_format",
+    finalize
+);
+
 pub mod automerge;
 pub mod y;
 
@@ -65,19 +77,19 @@ macro_rules! serialization_primitives {
                     .expect("can't encode");
             }
         }
-
-        impl SendRecvFuncs for $ty {
-            fn send(&self) -> Vec<u8> {
-                self.into()
-            }
-
-            fn recv(buffer: &[u8]) -> Self {
-                buffer.try_into().expect("invalid $ty")
-            }
-        }
     };
 }
 
+pub(crate) fn read_internal(internal: Internal) -> Vec<u8> {
+    let mut buffer0 = unsafe {
+        internal
+            .get_mut::<pg_sys::StringInfoData>()
+            .expect("Can't retrieve StringInfo pointer")
+    };
+    let buffer = StringInfo::from_pg(buffer0 as *mut _).expect("failed to construct StringInfo");
+    (*buffer0).cursor = (*buffer0).len;
+    buffer.as_bytes().to_vec()
+}
 #[cfg(test)]
 pub mod pg_test {
     pub fn setup(_options: Vec<&str>) {

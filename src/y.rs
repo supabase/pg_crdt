@@ -1,4 +1,4 @@
-use crate::serialization_primitives;
+use crate::{read_internal, serialization_primitives};
 use pgx::*;
 use serde::de::{Error, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -28,7 +28,6 @@ extension_sql!(
 
 #[derive(PostgresType)]
 #[inoutfuncs]
-#[sendrecvfuncs]
 pub struct YDoc(Doc);
 
 impl YDoc {
@@ -79,7 +78,6 @@ serialization_primitives!(YDoc);
 
 #[derive(PostgresType)]
 #[inoutfuncs]
-#[sendrecvfuncs]
 pub struct YUpdate(Update);
 
 impl TryFrom<&[u8]> for YUpdate {
@@ -168,6 +166,30 @@ fn yupdate_from_bytea(array: Vec<u8>) -> YUpdate {
         .as_slice()
         .try_into()
         .expect("invalid YUpdate (binary)")
+}
+
+#[pg_extern(immutable)]
+#[search_path(@extschema@)]
+fn ydoc_send(doc: YDoc) -> Vec<u8> {
+    (&doc).into()
+}
+
+#[pg_extern(immutable)]
+#[search_path(@extschema@)]
+fn ydoc_receive(internal: Internal) -> YDoc {
+    YDoc::try_from(read_internal(internal).as_slice()).expect("invalid YDoc")
+}
+
+#[pg_extern(immutable)]
+#[search_path(@extschema@)]
+fn yupdate_send(update: YUpdate) -> Vec<u8> {
+    (&update).into()
+}
+
+#[pg_extern(immutable)]
+#[search_path(@extschema@)]
+fn yupdate_receive(internal: Internal) -> YUpdate {
+    YUpdate::try_from(read_internal(internal).as_slice()).expect("invalid YDoc")
 }
 
 #[cfg(any(test, feature = "pg_test"))]
