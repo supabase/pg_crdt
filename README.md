@@ -5,6 +5,14 @@ A minimal POC for CRDT support in Postgres.
 Note: this POC was "least effort" set up to test compatibilty between pgx/yrs/postgres. It is not intended to have a
 user friendly, complete, or fully correct interface.
 
+## Installation
+
+Current version requires a patched version of cargo-pgx:
+
+```shell
+cargo install --git https://github.com/tcdi/pgx --rev 91d0d682 --force cargo-pgx
+```
+
 ## Design
 
 The database's internal representation of a CRDT Doc is the Doc's state vector encoded as an update. This format can be
