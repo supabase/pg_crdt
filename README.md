@@ -65,37 +65,37 @@ where id = 1;
 
 ```
 
-## API: Yjs/Yrs
+### API: Yjs/Yrs
 
-### crdt.new_ydoc()::crdt.ydoc
+#### crdt.new_ydoc()::crdt.ydoc
 
 Creates a new, empty, Yjs document (YDoc)
 
-### crdt.merge(crdt.ydoc, crdt.ydoc)::crdt.ydoc
+#### crdt.merge(crdt.ydoc, crdt.ydoc)::crdt.ydoc
 
 Merges two documents into one. 
 
 Synonymous to the `||` operator available in the `crdt` schema.
 
-### crdt.merge(crdt.ydoc, crdt.yupdate)::crdt.ydoc
+#### crdt.merge(crdt.ydoc, crdt.yupdate)::crdt.ydoc
 
 Applies an update to a document. `YUpdate` can be created by casting byte array (`bytea`) to `crdt.yupdate`
 
 Synonymous to the `||` operator available in the `crdt` schema.
 
-## API: Automerge
+### API: Automerge
 
-### crdt.new_autodoc()::crdt.autodoc
+#### crdt.new_autodoc()::crdt.autodoc
 
 Creates a new, empty, Automerge document
 
-### crdt.merge(crdt.autodoc, crdt.autodoc)::crdt.autodoc
+#### crdt.merge(crdt.autodoc, crdt.autodoc)::crdt.autodoc
 
 Merges two documents into one. 
 
 Synonymous to the `||` operator available in the `crdt` schema.
 
-### crdt.merge(crdt.autodoc, crdt.autochange)::crdt.autodoc
+#### crdt.merge(crdt.autodoc, crdt.autochange)::crdt.autodoc
 
 Applies an update to a document. `AutoChange` can be created by casting byte array (`bytea`) to `crdt.autochange`
 
