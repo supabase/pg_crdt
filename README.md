@@ -6,13 +6,13 @@ CRDTs are decentralized data structures that can safely be replicated and synchr
 
 ## Why
 
-Our goal was to evalaute if we could leverage a Postgres-backed CRDT and Supabase's existing [realtime](https://supabase.com/docs/guides/api#realtime-api-overview) API for change-data-capture to enable development of collaborative apps on the [Supabase](https://supabase.com) platform.
+Our goal was to evaluate if we could leverage a Postgres-backed CRDT and Supabase's existing [realtime](https://supabase.com/docs/guides/api#realtime-api-overview) API for change-data-capture to enable development of collaborative apps on the [Supabase](https://supabase.com) platform.
 
 The `pg_crdt` extension is a proof-of-concept that wraps rust's [yrs](https://docs.rs/yrs/latest/yrs/) and [automerge](https://crates.io/crates/automerge) libraries using the [pgx](https://github.com/tcdi/pgx) framework to add a Postgres native CRDT, `crdt.ydoc`. The extension supports creating a new `crdt.ydoc` and merging `crdt.ydoc`s. For a full list of available methods see [API](#api-yjsyrs).
 
 ## Challenges
 
-The experiment was sucessful in that it enabled a proof-of-concept CRDT-as-a-service. Through that experience we found that there are significant technical hurdles to using Postgres as a CRDT source-of-truth with updates broadcasted to collaborators using [supabase/realtime](https://github.com/supabase/realtime).
+The experiment was successful in that it enabled a proof-of-concept CRDT-as-a-service. Through that experience we found that there are significant technical hurdles to using Postgres as a CRDT source-of-truth with updates broadcasted to collaborators using [supabase/realtime](https://github.com/supabase/realtime).
 
 For example:
 
@@ -36,7 +36,7 @@ The database's internal representation of a CRDT Doc is the Doc's state vector e
 rehydrated to apply updates. It is also what new clients need first when they join the shared data structure.
 
 - When clients join a Doc, initial state is queried from a table
-- When updates from remote clients ocurr, realtime can broadcast the changes to subscribers
+- When updates from remote clients occur, realtime can broadcast the changes to subscribers
 
 ### Usage
 
