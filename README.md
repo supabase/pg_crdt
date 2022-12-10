@@ -6,7 +6,9 @@ CRDTs are decentralized data structures that can safely be replicated and synchr
 
 ## Why
 
-Our goal was to evaluate if we could leverage a Postgres-backed CRDT and Supabase's existing [realtime](https://supabase.com/docs/guides/api#realtime-api-overview) API for change-data-capture to enable development of collaborative apps on the [Supabase](https://supabase.com) platform.
+For an in-depth background, read the [blog post](https://supabase.com/blog/postgres-crdt).
+
+Our goal was to evaluate if we could leverage a Postgres-backed CRDT and Supabase's existing [Realtime](https://supabase.com/docs/guides/api#realtime-api-overview) API for change-data-capture to enable development of collaborative apps on the [Supabase](https://supabase.com) platform.
 
 The `pg_crdt` extension is a proof-of-concept that wraps rust's [yrs](https://docs.rs/yrs/latest/yrs/) and [automerge](https://crates.io/crates/automerge) libraries using the [pgx](https://github.com/tcdi/pgx) framework to add a Postgres native CRDT, `crdt.ydoc`. The extension supports creating a new `crdt.ydoc` and merging `crdt.ydoc`s. For a full list of available methods see [API](#api-yjsyrs).
 
