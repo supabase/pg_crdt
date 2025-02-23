@@ -1,6 +1,20 @@
-#include "pg_crdt.h"
+/* doctest/automerge/autodoc
 
-PG_MODULE_MAGIC;
+\pset linestyle unicode
+\pset border 2
+-- # autodoc
+--
+-- This documentation is also tests for the code, the examples below
+-- show the literal output of these statements from Postgres.
+--
+-- Some setup to make sure the extension is installed.
+
+set client_min_messages = 'WARNING'; -- pragma:hide
+create extension if not exists automerge;
+
+*/
+
+#include "../automerge.h"
 
 /* Callback function for freeing autodoc arrays. */
 static void
@@ -12,7 +26,7 @@ autodoc_get_flat_size(ExpandedObjectHeader *eohptr);
 
 static void
 autodoc_flatten_into(ExpandedObjectHeader *eohptr,
-				   void *result, Size allocated_size);
+					 void *result, Size allocated_size);
 
 static const ExpandedObjectMethods autodoc_methods = {
 	autodoc_get_flat_size,
@@ -37,10 +51,6 @@ autodoc_get_flat_size(ExpandedObjectHeader *eohptr) {
 		return doc->flat_size;
 	}
 
-    AMstackItem(NULL, AMcommit(doc->doc, AMstr("flattened"), NULL),
-				abort_cb,
-				AMexpect(AM_VAL_TYPE_CHANGE_HASH));
-
     AMitemToBytes(AMstackItem(&doc->stack,
 							  AMsave(doc->doc),
 							  abort_cb,
@@ -60,7 +70,8 @@ autodoc_get_flat_size(ExpandedObjectHeader *eohptr) {
    allocated_size in bytes.  */
 static void
 autodoc_flatten_into(ExpandedObjectHeader *eohptr,
-				   void *result, Size allocated_size)  {
+					 void *result, Size allocated_size)
+{
 	void *data;
 
 	/* Cast EOH pointer to expanded object, and result pointer to flat
@@ -130,7 +141,7 @@ new_expanded_autodoc(autodoc_FlatAutodoc *flat, MemoryContext parentcontext) {
 
 	if (flat != NULL)
 	{
-		flat_size = VARSIZE_ANY_EXHDR(flat);
+		flat_size = VARSIZE(flat) - AUTODOC_OVERHEAD();
 		flat_data = AUTODOC_DATA(flat);
 		AMitemToDoc(AMstackItem(&doc->stack,
 								AMload(flat_data, flat_size),
@@ -156,6 +167,7 @@ autodoc_free_context_callback(void* ptr) {
 	autodoc_Autodoc *doc = (autodoc_Autodoc *) ptr;
 	LOGF();
     AMstackFree(&doc->stack);
+	free(doc->stack);
 }
 
 autodoc_Autodoc *
@@ -171,81 +183,6 @@ DatumGetAutodoc(Datum d) {
 	flat = (autodoc_FlatAutodoc*)PG_DETOAST_DATUM(d);
 	doc = new_expanded_autodoc(flat, CurrentMemoryContext);
 	return doc;
-}
-
-PG_FUNCTION_INFO_V1(autodoc_in);
-Datum
-autodoc_in(PG_FUNCTION_ARGS) {
-    char *query = PG_GETARG_CSTRING(0);
-	autodoc_Autodoc *autodoc;
-
-	LOGF();
-
- 	autodoc = new_expanded_autodoc(NULL, CurrentMemoryContext);
-    AUTODOC_RETURN(autodoc);
-}
-
-PG_FUNCTION_INFO_V1(autodoc_out);
-Datum
-autodoc_out(PG_FUNCTION_ARGS)
-{
-	autodoc_Autodoc *db;
-	StringInfo dump;
-
-	LOGF();
-
-	db = AUTODOC_GETARG(0);
-	dump = makeStringInfo();
-	appendStringInfo(dump, "{}");
-    PG_RETURN_CSTRING(dump->data);
-}
-
-static bool abort_cb(AMstack** stack, void* data) {
-    static char buffer[512] = {0};
-	AMstatus status;
-    char const* suffix = NULL;
-    if (!stack) {
-        suffix = "stack*";
-    } else if (!*stack) {
-        suffix = "stack";
-    } else if (!(*stack)->result) {
-        suffix = "result";
-    }
-    if (suffix) {
-        free(data);
-        AMstackFree(stack);
-		ereport(ERROR, (errmsg("Null `AM%s*`.\n", suffix)));
-        return false;
-    }
-    status = AMresultStatus((*stack)->result);
-    switch (status) {
-        case AM_STATUS_ERROR:
-            strcpy(buffer, "Error");
-            break;
-        case AM_STATUS_INVALID_RESULT:
-            strcpy(buffer, "Invalid result");
-            break;
-        case AM_STATUS_OK:
-            break;
-        default:
-            sprintf(buffer, "Unknown `AMstatus` tag %d", status);
-    }
-    if (buffer[0]) {
-        char* const c_msg = AMstrdup(AMresultError((*stack)->result), NULL);
-        free(data);
-        AMstackFree(stack);
-		ereport(ERROR, (errmsg("%s; %s.\n", buffer, c_msg)));
-        // free(c_msg);
-        return false;
-    }
-    free(data);
-    return true;
-}
-
-void
-_PG_init(void)
-{
-	LOGF();
 }
 
 /* Local Variables: */

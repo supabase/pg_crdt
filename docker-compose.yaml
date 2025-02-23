@@ -19,4 +19,5 @@ services:
       POSTGRES_DB: db
     cap_add:
       - SYS_PTRACE
+    tty: false
 

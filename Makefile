@@ -1,15 +1,14 @@
 #http://blog.pgxn.org/post/4783001135/extension-makefiles pg makefiles
 
-EXTENSION = pg_crdt
+EXTENSION = automerge
 PG_CONFIG ?= pg_config
-DATA = $(wildcard *--*.sql)
+DATA = $(wildcard src/automerge/*--*.sql)
 PGXS := $(shell $(PG_CONFIG) --pgxs)
-MODULE_big = pg_crdt
-OBJS = $(patsubst %.c,%.o,$(wildcard src/*.c))
+MODULE_big = automerge
+OBJS = $(patsubst %.c,%.o,$(shell find src/automerge -name '*.c'))
 SHLIB_LINK = -lc -lpq -lautomerge
 
-TESTS        = $(wildcard test/sql/*.sql)
-REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
-REGRESS_OPTS = --inputdir=test --load-language=plpgsql
+REGRESS := $(shell find sql/doctest -name '*.sql' -exec basename {} .sql \;)
+
 include $(PGXS)
 override CFLAGS += -std=c11 -g3 -O0

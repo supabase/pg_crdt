@@ -1,24 +1,8 @@
-#ifndef SQLITE_H
-#define SQLITE_H
-
-#include "postgres.h"
-#include "fmgr.h"
-#include "funcapi.h"
-#include "utils/expandeddatum.h"
-#include "utils/lsyscache.h"
-#include "utils/builtins.h"
-#include "lib/stringinfo.h"
-
-#include <automerge-c/automerge.h>
-#include <automerge-c/utils/enum_string.h>
-#include <automerge-c/utils/string.h>
-#include <automerge-c/utils/stack.h>
-#include <automerge-c/utils/stack_callback_data.h>
+#ifndef AUTODOC_H
+#define AUTODOC_H
 
 /* ID for debugging crosschecks */
 #define autodoc_MAGIC 319279583
-
-#define LOGF() elog(DEBUG1, __func__)
 
 /* Flattened representation of autodoc, used to store to disk.
 
@@ -64,10 +48,6 @@ autodoc_Autodoc *DatumGetAutodoc(Datum d);
 
 /* Help macro to cast generic Datum header pointer to expanded Autodoc */
 #define AutodocGetEOHP(d) (autodoc_Autodoc *) DatumGetEOHP(d);
-
-static bool abort_cb(AMstack**, void*);
-
-void _PG_init(void);
 
 #endif /* AUTODOC_H */
 
