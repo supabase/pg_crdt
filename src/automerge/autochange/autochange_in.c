@@ -3,13 +3,28 @@
 PG_FUNCTION_INFO_V1(autochange_in);
 Datum
 autochange_in(PG_FUNCTION_ARGS) {
-    char *query = PG_GETARG_CSTRING(0);
-	autochange_Autochange *autochange;
+	autochange_Autochange *change;
+	Datum d;
+	bytea *bin;
+	int len;
+	char *input;
+	uint8_t *data;
 
 	LOGF();
 
- 	autochange = new_expanded_autochange(NULL, CurrentMemoryContext);
-    AUTOCHANGE_RETURN(autochange);
+	input = PG_GETARG_CSTRING(0);
+	d = DirectFunctionCall1(byteain, CStringGetDatum(input));
+	bin = DatumGetByteaP(d);
+	data = (uint8_t*)VARDATA(bin);
+	len = VARSIZE(bin) - VARHDRSZ;
+
+ 	change = new_expanded_autochange(NULL, CurrentMemoryContext);
+    AMitemToChange(AMstackItem(&change->stack,
+                               AMchangeFromBytes(data, len),
+                               abort_cb,
+                               AMexpect(AM_VAL_TYPE_CHANGE)),
+                   &change->change);
+    AUTOCHANGE_RETURN(change);
 }
 
 /* Local Variables: */
