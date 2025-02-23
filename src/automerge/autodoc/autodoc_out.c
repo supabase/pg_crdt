@@ -1,18 +1,32 @@
 #include "../automerge.h"
 
 PG_FUNCTION_INFO_V1(autodoc_out);
-Datum
-autodoc_out(PG_FUNCTION_ARGS)
+Datum autodoc_out(PG_FUNCTION_ARGS)
 {
-	autodoc_Autodoc *db;
-	StringInfo dump;
+	autodoc_Autodoc *doc;
+	bytea *bin;
+	Datum encoded;
+	char *cstr;
+	AMbyteSpan binary;
+	Oid outputFunc;
+	bool isVarlena;
+	char *result;
 
 	LOGF();
 
-	db = AUTODOC_GETARG(0);
-	dump = makeStringInfo();
-	appendStringInfo(dump, "{}");
-    PG_RETURN_CSTRING(dump->data);
+	doc = AUTODOC_GETARG(0);
+    AMitemToBytes(AMstackItem(&doc->stack,
+							  AMsave(doc->doc),
+							  abort_cb,
+							  AMexpect(AM_VAL_TYPE_BYTES)),
+				  &binary);
+
+	bin = (bytea *) palloc(VARHDRSZ + binary.count);
+	SET_VARSIZE(bin, VARHDRSZ + binary.count);
+	memcpy(VARDATA(bin), binary.src, binary.count);
+	getTypeOutputInfo(BYTEAOID, &outputFunc, &isVarlena);
+	result = OidOutputFunctionCall(outputFunc, PointerGetDatum(bin));
+	PG_RETURN_CSTRING(result);
 }
 
 /* Local Variables: */
