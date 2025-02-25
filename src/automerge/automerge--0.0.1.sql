@@ -41,8 +41,33 @@ CREATE TYPE autochange (
     internallength = VARIABLE
 );
 
+CREATE FUNCTION merge(autodoc, autodoc)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_merge'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION commit(doc autodoc, message text)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_commit'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION get_actor_id(doc autodoc)
+RETURNS text
+AS '$libdir/automerge', 'autodoc_get_actor_id'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION change_message(autochange)
+RETURNS text
+AS '$libdir/automerge', 'autochange_message'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION change_hash(autochange)
+RETURNS bytea
+AS '$libdir/automerge', 'autochange_get_change_hash'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION get_changes(autodoc)
-RETURNS SETOF autochange
+RETURNS TABLE (change autochange)
 AS '$libdir/automerge', 'autodoc_get_changes'
 LANGUAGE C IMMUTABLE STRICT;
 

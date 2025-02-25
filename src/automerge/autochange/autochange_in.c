@@ -18,12 +18,7 @@ autochange_in(PG_FUNCTION_ARGS) {
 	data = (uint8_t*)VARDATA(bin);
 	len = VARSIZE(bin) - VARHDRSZ;
 
- 	change = new_expanded_autochange(NULL, CurrentMemoryContext);
-    AMitemToChange(AMstackItem(&change->stack,
-                               AMchangeFromBytes(data, len),
-                               abort_cb,
-                               AMexpect(AM_VAL_TYPE_CHANGE)),
-                   &change->change);
+ 	change = new_expanded_autochange(CurrentMemoryContext, data, len);
     AUTOCHANGE_RETURN(change);
 }
 

@@ -8,7 +8,10 @@ MODULE_big = automerge
 OBJS = $(patsubst %.c,%.o,$(shell find src/automerge -name '*.c'))
 SHLIB_LINK = -lc -lpq -lautomerge
 
-REGRESS := $(shell find sql/doctest -name '*.sql' -exec basename {} .sql \;)
+REGRESS := $(shell find sql -name '*.sql' -exec basename {} .sql \;)
 
 include $(PGXS)
 override CFLAGS += -std=c11 -g3 -O0
+
+docgen:
+	python3 docgen.py

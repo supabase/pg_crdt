@@ -5,42 +5,41 @@ Datum autodoc_get_changes(PG_FUNCTION_ARGS)
 {
     autodoc_Autodoc *doc;
     autochange_Autochange *change;
-    AMitems changes;
-    AMitems *changesp;
+    autodoc_ChangesState *state;
     AMitem* item = NULL;
+    AMitems changes;
     AMchange* itemchange;
     AMbyteSpan bs;
     FuncCallContext *funcctx;
 
-    doc = AUTODOC_GETARG(0);
+    LOGF();
 
     if (SRF_IS_FIRSTCALL()) {
         MemoryContext oldctx;
         funcctx = SRF_FIRSTCALL_INIT();
         oldctx = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+        doc = AUTODOC_GETARG(0);
+		state = (autodoc_ChangesState*)palloc(sizeof(autodoc_ChangesState));
 
+        state->doc = doc;
         changes = AMstackItems(&doc->stack,
                                AMgetChanges(doc->doc, NULL),
                                abort_cb,
                                AMexpect(AM_VAL_TYPE_CHANGE));
-
-        funcctx->user_fctx = &changes;
-        funcctx->max_calls = AMitemsSize(&changes);
+        state->changes = (AMitems *) palloc(sizeof(AMitems));
+        memcpy(state->changes, &changes, sizeof(AMitems));
+        funcctx->user_fctx = state;
+        funcctx->max_calls = AMitemsSize(state->changes);
         MemoryContextSwitchTo(oldctx);
     }
     funcctx = SRF_PERCALL_SETUP();
 
-    changesp = (AMitems*) funcctx->user_fctx;
-    if ((item = AMitemsNext(changesp, 1)) != NULL && funcctx->call_cntr < funcctx->max_calls) {
+    state = (autodoc_ChangesState*) funcctx->user_fctx;
+    if ((item = AMitemsNext(state->changes, 1)) != NULL) {
         AMitemToChange(item, &itemchange);
-        change = new_expanded_autochange(NULL, CurrentMemoryContext);
         bs = AMchangeRawBytes(itemchange);
-        AMitemToChange(AMstackItem(&change->stack,
-                                   AMchangeFromBytes(bs.src, bs.count),
-                                   abort_cb,
-                                   AMexpect(AM_VAL_TYPE_CHANGE)),
-                       &change->change);
-    SRF_RETURN_NEXT(funcctx, EOHPGetRWDatum(&change->hdr));
+        change = new_expanded_autochange(CurrentMemoryContext, bs.src, bs.count);
+        SRF_RETURN_NEXT(funcctx, EOHPGetRWDatum(&change->hdr));
     } else {
         SRF_RETURN_DONE(funcctx);
     }

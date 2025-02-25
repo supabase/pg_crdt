@@ -9,6 +9,7 @@
 --
 -- Some setup to make sure the extension is installed.
 
+set search_path to public,automerge; -- pragma:hide
 set client_min_messages = 'WARNING'; -- pragma:hide
 create extension if not exists automerge;
 

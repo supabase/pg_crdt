@@ -21,33 +21,23 @@ static const ExpandedObjectMethods autochange_methods = {
 static Size
 autochange_get_flat_size(ExpandedObjectHeader *eohptr) {
 	autochange_Autochange *change = (autochange_Autochange*) eohptr;
-	size_t flat_size;
-    AMbyteSpan binary;
+    AMbyteSpan bs;
 
 	LOGF();
 
-	/* This is a sanity check that the object is initialized */
 	Assert(change->em_magic == autochange_MAGIC);
 
-	/* Use cached value if already computed */
 	if (change->flat_size)
 	{
 		return change->flat_size;
 	}
 
-    /* AMitemToBytes(AMstackItem(&change->stack, */
-	/* 						  AMsave(doc->doc), */
-	/* 						  abort_cb, */
-	/* 						  AMexpect(AM_VAL_TYPE_BYTES)), */
-	/* 			  &binary); */
-
-	/* doc->flat_data = palloc0(binary.count); */
-	/* memcpy(doc->flat_data, binary.src, binary.count); */
-	/* flat_size = AUTOCHANGE_OVERHEAD() + binary.count; */
-
 	/* Cache this value in the expanded object */
-	change->flat_size = 0;
-	return flat_size;
+	bs = AMchangeRawBytes(change->change);
+	change->flat_data = palloc0(bs.count);
+	memcpy(change->flat_data, bs.src, bs.count);
+	change->flat_size = AUTOCHANGE_OVERHEAD() + bs.count;
+	return change->flat_size;
 }
 
 /* Flatten autochange into a pre-allocated result buffer that is
@@ -73,8 +63,9 @@ autochange_flatten_into(ExpandedObjectHeader *eohptr,
 
 	/* Get the pointer to the start of the flattened data and copy the
 	   expanded value into it */
+
 	data = AUTOCHANGE_DATA(flat);
-	memcpy(data, change->flat_data, change->flat_size - AUTOCHANGE_OVERHEAD());
+	memcpy(data, change->flat_data, change->flat_size - AUTODOC_OVERHEAD());
 
 	/* Set the size of the varlena object */
 	SET_VARSIZE(flat, allocated_size);
@@ -82,10 +73,8 @@ autochange_flatten_into(ExpandedObjectHeader *eohptr,
 
 /* Expand a flat autochange in to an Expanded one, return as Postgres Datum. */
 autochange_Autochange *
-new_expanded_autochange(autochange_FlatAutochange *flat, MemoryContext parentcontext) {
+new_expanded_autochange(MemoryContext parentcontext, uint8_t *flat_data, size_t flat_size) {
 	autochange_Autochange *change;
-	size_t flat_size;
-	unsigned char *flat_data;
 	MemoryContext objcxt, oldcxt;
 	MemoryContextCallback *ctxcb;
 
@@ -113,25 +102,13 @@ new_expanded_autochange(autochange_FlatAutochange *flat, MemoryContext parentcon
 
 	/* Setting flat size to zero tells us the object has been written. */
 	change->flat_size = 0;
-	change->flat_data = NULL;
 
 	change->stack = calloc(1, sizeof(AMstack));
-    /* AMitemToDoc(AMstackItem(&change->stack, */
-	/* 						AMcreate(NULL), */
-	/* 						abort_cb, */
-	/* 						AMexpect(AM_VAL_TYPE_DOC)), */
-	/* 			&change->change); */
-
-	if (flat != NULL)
-	{
-		flat_size = VARSIZE(flat) - AUTOCHANGE_OVERHEAD();
-		flat_data = AUTOCHANGE_DATA(flat);
-		/* AMitemToDoc(AMstackItem(&doc->stack, */
-		/* 						AMload(flat_data, flat_size), */
-		/* 						abort_cb, */
-		/* 						AMexpect(AM_VAL_TYPE_DOC)), */
-		/* 			&doc->doc); */
-	}
+	AMitemToChange(AMstackItem(&change->stack,
+							AMchangeFromBytes(flat_data, flat_size),
+							abort_cb,
+							AMexpect(AM_VAL_TYPE_DOC)),
+				&change->change);
 
 	/* Create a context callback to free autochange when context is cleared */
 	ctxcb = MemoryContextAlloc(objcxt, sizeof(MemoryContextCallback));
@@ -157,6 +134,9 @@ autochange_Autochange *
 DatumGetAutochange(Datum d) {
 	autochange_Autochange *change;
 	autochange_FlatAutochange *flat;
+	size_t flat_size;
+	unsigned char *flat_data;
+
 	LOGF();
 	if (VARATT_IS_EXTERNAL_EXPANDED(DatumGetPointer(d))) {
 		change = AutochangeGetEOHP(d);
@@ -164,7 +144,9 @@ DatumGetAutochange(Datum d) {
 		return change;
 	}
 	flat = (autochange_FlatAutochange*)PG_DETOAST_DATUM(d);
-	change = new_expanded_autochange(flat, CurrentMemoryContext);
+	flat_data = AUTOCHANGE_DATA(flat);
+	flat_size = VARSIZE(flat) - AUTOCHANGE_OVERHEAD();
+	change = new_expanded_autochange(CurrentMemoryContext, flat_data, flat_size);
 	return change;
 }
 

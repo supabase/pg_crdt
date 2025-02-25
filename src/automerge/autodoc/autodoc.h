@@ -27,6 +27,11 @@ typedef struct autodoc_Autodoc  {
 	unsigned char *flat_data;
 } autodoc_Autodoc;
 
+typedef struct autodoc_ChangesState {
+	autodoc_Autodoc *doc;
+    AMitems *changes;
+} autodoc_ChangesState;
+
 /* Create a new autodoc datum. */
 autodoc_Autodoc *
 new_expanded_autodoc(autodoc_FlatAutodoc* flat, MemoryContext parentcontext);

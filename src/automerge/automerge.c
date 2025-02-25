@@ -11,6 +11,7 @@
 
 set client_min_messages = 'WARNING'; -- pragma:hide
 create extension if not exists automerge;
+set search_path to public,automerge;
 
 */
 
