@@ -6,8 +6,6 @@ autochange_out(PG_FUNCTION_ARGS)
 {
 	autochange_Autochange *change;
 	bytea *bin;
-	Datum encoded;
-	char *cstr;
 	AMbyteSpan binary;
 	Oid outputFunc;
 	bool isVarlena;

@@ -29,7 +29,7 @@ typedef struct autochange_Autochange  {
 
 /* Create a new autochange datum. */
 autochange_Autochange *
-new_expanded_autochange(MemoryContext parentcontext, uint8_t *flat_data, size_t flat_size);
+new_expanded_autochange(MemoryContext parentcontext, uint8_t const *flat_data, size_t flat_size);
 
 /* Helper function that either detoasts or expands. */
 autochange_Autochange *DatumGetAutochange(Datum d);

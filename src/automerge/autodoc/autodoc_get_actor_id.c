@@ -16,7 +16,7 @@ Datum autodoc_get_actor_id(PG_FUNCTION_ARGS) {
 					&actor_id);
 
 	bs = AMactorIdStr(actor_id);
-    PG_RETURN_TEXT_P(cstring_to_text_with_len(bs.src, bs.count));
+    PG_RETURN_TEXT_P(cstring_to_text_with_len((const char *)bs.src, bs.count));
 }
 
 /* Local Variables: */

@@ -9,7 +9,8 @@ Datum autodoc_get_changes(PG_FUNCTION_ARGS)
     AMitem* item = NULL;
     AMitems changes;
     AMchange* itemchange;
-    AMbyteSpan bs;
+    AMbyteSpan rawbs;
+    uint8_t *raw = NULL;
     FuncCallContext *funcctx;
 
     LOGF();
@@ -35,10 +36,12 @@ Datum autodoc_get_changes(PG_FUNCTION_ARGS)
     funcctx = SRF_PERCALL_SETUP();
 
     state = (autodoc_ChangesState*) funcctx->user_fctx;
+
     if ((item = AMitemsNext(state->changes, 1)) != NULL) {
         AMitemToChange(item, &itemchange);
-        bs = AMchangeRawBytes(itemchange);
-        change = new_expanded_autochange(CurrentMemoryContext, bs.src, bs.count);
+        rawbs = AMchangeRawBytes(itemchange);
+        memcpy(raw, rawbs.src, rawbs.count);
+        change = new_expanded_autochange(CurrentMemoryContext, raw, rawbs.count);
         SRF_RETURN_NEXT(funcctx, EOHPGetRWDatum(&change->hdr));
     } else {
         SRF_RETURN_DONE(funcctx);

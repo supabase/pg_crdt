@@ -9,6 +9,7 @@
 #include "utils/jsonb.h"
 #include "utils/builtins.h"
 #include "utils/numeric.h"
+#include "utils/uuid.h"
 #include "lib/stringinfo.h"
 #include "nodes/supportnodes.h"
 

@@ -56,6 +56,11 @@ RETURNS text
 AS '$libdir/automerge', 'autodoc_get_actor_id'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION set_actor_id(doc autodoc, actor_id text)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_set_actor_id'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION change_message(autochange)
 RETURNS text
 AS '$libdir/automerge', 'autochange_message'
@@ -67,24 +72,49 @@ AS '$libdir/automerge', 'autochange_get_change_hash'
 LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION get_changes(autodoc)
-RETURNS TABLE (change autochange)
+RETURNS SETOF autochange
 AS '$libdir/automerge', 'autodoc_get_changes'
 LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION from_jsonb(jsonb)
+CREATE FUNCTION get_str(doc autodoc, key text)
+RETURNS text
+AS '$libdir/automerge', 'autodoc_get_str'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION get_int(doc autodoc, key text)
+RETURNS bigint
+AS '$libdir/automerge', 'autodoc_get_int'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION get_double(doc autodoc, key text)
+RETURNS float8
+AS '$libdir/automerge', 'autodoc_get_double'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION get_bool(doc autodoc, key text)
+RETURNS bool
+AS '$libdir/automerge', 'autodoc_get_bool'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION autodoc_from_jsonb(jsonb, message text)
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_from_jsonb'
 LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION to_jsonb(autodoc)
+CREATE FUNCTION autodoc_from_jsonb(jsonb)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_from_jsonb'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION autodoc_to_jsonb(autodoc)
 RETURNS jsonb
 AS '$libdir/automerge', 'autodoc_to_jsonb'
 LANGUAGE C IMMUTABLE STRICT;
 
 CREATE CAST (autodoc AS jsonb)
-WITH FUNCTION to_jsonb(autodoc)
+WITH FUNCTION autodoc_to_jsonb(autodoc)
 AS IMPLICIT;
 
 CREATE CAST (jsonb AS autodoc)
-WITH FUNCTION from_jsonb(jsonb)
+WITH FUNCTION autodoc_from_jsonb(jsonb)
 AS IMPLICIT;

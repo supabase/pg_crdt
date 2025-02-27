@@ -5,8 +5,6 @@ Datum autodoc_out(PG_FUNCTION_ARGS)
 {
 	autodoc_Autodoc *doc;
 	bytea *bin;
-	Datum encoded;
-	char *cstr;
 	AMbyteSpan bs;
 	Oid outputFunc;
 	bool isVarlena;

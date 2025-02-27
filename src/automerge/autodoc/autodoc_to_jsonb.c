@@ -1,7 +1,7 @@
 #include "../automerge.h"
 
-static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId *objid, JsonbParseState *state);
-static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId *objid, JsonbParseState *state);
+static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId const *objid, JsonbParseState *state);
+static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, JsonbParseState *state);
 
 PG_FUNCTION_INFO_V1(autodoc_to_jsonb);
 Datum autodoc_to_jsonb(PG_FUNCTION_ARGS) {
@@ -19,11 +19,11 @@ Datum autodoc_to_jsonb(PG_FUNCTION_ARGS) {
     PG_RETURN_JSONB_P(result);
 }
 
-static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId *objid, JsonbParseState *state) {
+static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId const *objid, JsonbParseState *state) {
     AMitem* item = NULL;
     AMitem* itemkey = NULL;
     AMitems keys;
-    AMobjId *itemid;
+    AMobjId const *itemid;
     AMobjType itemtype;
     AMvalType valtype;
     JsonbValue key;
@@ -118,11 +118,11 @@ static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId *objid, JsonbParse
     return pushJsonbValue(&state, WJB_END_OBJECT, NULL);
 }
 
-static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId *objid, JsonbParseState *state) {
+static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, JsonbParseState *state) {
     AMitem* item = NULL;
     AMitem* itemkey = NULL;
     AMitems items;
-    AMobjId *itemid;
+    AMobjId const *itemid;
     AMobjType itemtype;
     AMvalType valtype;
     size_t itempos;

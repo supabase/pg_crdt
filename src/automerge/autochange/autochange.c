@@ -73,7 +73,7 @@ autochange_flatten_into(ExpandedObjectHeader *eohptr,
 
 /* Expand a flat autochange in to an Expanded one, return as Postgres Datum. */
 autochange_Autochange *
-new_expanded_autochange(MemoryContext parentcontext, uint8_t *flat_data, size_t flat_size) {
+new_expanded_autochange(MemoryContext parentcontext, uint8_t const *flat_data, size_t flat_size) {
 	autochange_Autochange *change;
 	MemoryContext objcxt, oldcxt;
 	MemoryContextCallback *ctxcb;
@@ -107,7 +107,7 @@ new_expanded_autochange(MemoryContext parentcontext, uint8_t *flat_data, size_t 
 	AMitemToChange(AMstackItem(&change->stack,
 							AMchangeFromBytes(flat_data, flat_size),
 							abort_cb,
-							AMexpect(AM_VAL_TYPE_DOC)),
+							AMexpect(AM_VAL_TYPE_CHANGE)),
 				&change->change);
 
 	/* Create a context callback to free autochange when context is cleared */

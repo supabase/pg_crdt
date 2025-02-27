@@ -16,7 +16,7 @@ Datum autodoc_commit(PG_FUNCTION_ARGS) {
     AUTODOC_RETURN(doc);
 }
 
-SUPPORT_FN(matrix_apply, linitial);
+SUPPORT_FN(autodoc_commit, linitial);
 
 /* Local Variables: */
 /* mode: c */

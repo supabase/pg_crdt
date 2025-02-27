@@ -1,8 +1,8 @@
 #include "../automerge.h"
 
-PG_FUNCTION_INFO_V1(autochange_message);
+PG_FUNCTION_INFO_V1(autochange_actor_id);
 Datum
-autochange_message(PG_FUNCTION_ARGS)
+autochange_actor_id(PG_FUNCTION_ARGS)
 {
 	autochange_Autochange *change;
 	char *cstr;

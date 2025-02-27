@@ -11,6 +11,7 @@
 */
 typedef struct autodoc_FlatAutodoc {
 	int32 vl_len_;
+	uint8_t uuid[UUID_LEN];
 } autodoc_FlatAutodoc;
 
 /* Expanded representation of autodoc.

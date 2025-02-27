@@ -2,22 +2,26 @@
 
 static void _object_walk(JsonbIterator **it,
 						 autodoc_Autodoc *doc,
-						 AMobjId *objid);
+						 AMobjId const *objid);
 
 static void _array_walk(JsonbIterator **it,
 						autodoc_Autodoc *doc,
-						AMobjId *objid);
+						AMobjId const *objid);
 
 
 PG_FUNCTION_INFO_V1(autodoc_from_jsonb);
 Datum autodoc_from_jsonb(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
+	text *message = NULL;
 	Jsonb *jb;
     JsonbIterator *it;
 	JsonbValue v;
 	LOGF();
 
     jb = PG_GETARG_JSONB_P(0);
+	if (PG_NARGS() > 1 && !PG_ARGISNULL(1)) {
+		message = PG_GETARG_TEXT_PP(0);
+	}
 
 	if (JB_ROOT_IS_SCALAR(jb))
 		ereport(ERROR,
@@ -43,15 +47,22 @@ Datum autodoc_from_jsonb(PG_FUNCTION_ARGS) {
 
     _object_walk(&it, doc, AM_ROOT);
 
+	if (message != NULL) {
+		/* AMstackItem(&doc->stack, */
+		/* 			AMcommit(doc->doc, AMstr(text_to_cstring(message)), NULL), */
+		/* 			abort_cb, */
+		/* 			AMexpect(AM_VAL_TYPE_CHANGE_HASH)); */
+	}
+
     AUTODOC_RETURN(doc);
 }
 
-static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId *objid)
+static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const *objid)
 {
 	JsonbValue v;
 	JsonbIteratorToken r;
 	char *key = NULL;
-	AMobjId *newobjid;
+	AMobjId const *newobjid;
 
 	while((r = JsonbIteratorNext(it, &v, false)) != WJB_DONE) {
 		switch(r) {
@@ -155,11 +166,11 @@ static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId *obji
 
 }
 
-static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId *objid)
+static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const *objid)
 {
 	JsonbValue v;
 	JsonbIteratorToken r;
-	AMobjId *newobjid;
+	AMobjId const *newobjid;
 
 	while((r = JsonbIteratorNext(it, &v, false)) != WJB_DONE) {
 		switch(r) {

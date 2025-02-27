@@ -91,6 +91,15 @@ autodoc_flatten_into(ExpandedObjectHeader *eohptr,
 
 	/* Get the pointer to the start of the flattened data and copy the
 	   expanded value into it */
+    /* AMitemToActorId(AMstackItem(&doc->stack, */
+	/* 							AMgetActorId(doc->doc), */
+	/* 							abort_cb, */
+	/* 							AMexpect(AM_VAL_TYPE_ACTOR_ID)), */
+	/* 				&actor_id); */
+
+	/* bs = AMactorIdBytes(actor_id); */
+	/* memcpy(flat->uuid, bs.src, UUID_LEN); */
+
 	data = AUTODOC_DATA(flat);
 	memcpy(data, doc->flat_data, doc->flat_size - AUTODOC_OVERHEAD());
 
@@ -139,16 +148,28 @@ new_expanded_autodoc(autodoc_FlatAutodoc *flat, MemoryContext parentcontext) {
 							abort_cb,
 							AMexpect(AM_VAL_TYPE_DOC)),
 				&doc->doc);
-
-	if (flat != NULL)
-	{
+	if (flat != NULL) {
 		flat_size = VARSIZE(flat) - AUTODOC_OVERHEAD();
 		flat_data = AUTODOC_DATA(flat);
-		AMitemToDoc(AMstackItem(&doc->stack,
-								AMload(flat_data, flat_size),
-								abort_cb,
-								AMexpect(AM_VAL_TYPE_DOC)),
+
+		AMitemToDoc(AMstackItem(
+						&doc->stack,
+						AMload(flat_data, flat_size),
+						abort_cb,
+						AMexpect(AM_VAL_TYPE_DOC)),
 					&doc->doc);
+
+		/* AMitemToActorId(AMstackItem( */
+		/* 					&doc->stack, */
+		/* 					AMactorIdFromBytes(flat->uuid, UUID_LEN), */
+		/* 					abort_cb, */
+		/* 					AMexpect(AM_VAL_TYPE_ACTOR_ID)), */
+		/* 				&actor_id); */
+
+		/* AMstackItem(&doc->stack, */
+		/* 			AMsetActorId(doc->doc, actor_id), */
+		/* 			abort_cb, */
+		/* 			AMexpect(AM_VAL_TYPE_VOID)); */
 	}
 
 	/* Create a context callback to free autodoc when context is cleared */
