@@ -74,6 +74,8 @@ autodoc_flatten_into(ExpandedObjectHeader *eohptr,
 					 void *result, Size allocated_size)
 {
 	void *data;
+	AMbyteSpan bs;
+	const struct AMactorId *actor_id;
 
 	/* Cast EOH pointer to expanded object, and result pointer to flat
 	   object */
@@ -89,16 +91,14 @@ autodoc_flatten_into(ExpandedObjectHeader *eohptr,
 	/* Zero out the whole allocated buffer */
 	memset(flat, 0, allocated_size);
 
-	/* Get the pointer to the start of the flattened data and copy the
-	   expanded value into it */
-    /* AMitemToActorId(AMstackItem(&doc->stack, */
-	/* 							AMgetActorId(doc->doc), */
-	/* 							abort_cb, */
-	/* 							AMexpect(AM_VAL_TYPE_ACTOR_ID)), */
-	/* 				&actor_id); */
+    AMitemToActorId(AMstackItem(&doc->stack,
+								AMgetActorId(doc->doc),
+								abort_cb,
+								AMexpect(AM_VAL_TYPE_ACTOR_ID)),
+					&actor_id);
 
-	/* bs = AMactorIdBytes(actor_id); */
-	/* memcpy(flat->uuid, bs.src, UUID_LEN); */
+	bs = AMactorIdBytes(actor_id);
+	memcpy(flat->uuid, bs.src, UUID_LEN);
 
 	data = AUTODOC_DATA(flat);
 	memcpy(data, doc->flat_data, doc->flat_size - AUTODOC_OVERHEAD());
@@ -115,6 +115,7 @@ new_expanded_autodoc(autodoc_FlatAutodoc *flat, MemoryContext parentcontext) {
 	unsigned char *flat_data;
 	MemoryContext objcxt, oldcxt;
 	MemoryContextCallback *ctxcb;
+	const struct AMactorId *actor_id;
 
 	LOGF();
 
@@ -159,17 +160,17 @@ new_expanded_autodoc(autodoc_FlatAutodoc *flat, MemoryContext parentcontext) {
 						AMexpect(AM_VAL_TYPE_DOC)),
 					&doc->doc);
 
-		/* AMitemToActorId(AMstackItem( */
-		/* 					&doc->stack, */
-		/* 					AMactorIdFromBytes(flat->uuid, UUID_LEN), */
-		/* 					abort_cb, */
-		/* 					AMexpect(AM_VAL_TYPE_ACTOR_ID)), */
-		/* 				&actor_id); */
+		AMitemToActorId(AMstackItem(
+							&doc->stack,
+							AMactorIdFromBytes(flat->uuid, UUID_LEN),
+							abort_cb,
+							AMexpect(AM_VAL_TYPE_ACTOR_ID)),
+						&actor_id);
 
-		/* AMstackItem(&doc->stack, */
-		/* 			AMsetActorId(doc->doc, actor_id), */
-		/* 			abort_cb, */
-		/* 			AMexpect(AM_VAL_TYPE_VOID)); */
+		AMstackItem(&doc->stack,
+					AMsetActorId(doc->doc, actor_id),
+					abort_cb,
+					AMexpect(AM_VAL_TYPE_VOID));
 	}
 
 	/* Create a context callback to free autodoc when context is cleared */

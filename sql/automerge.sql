@@ -66,3 +66,15 @@ select get_bool('{"foo":true}'::jsonb::autodoc, 'foo');
 --
 -- All changes can be retrieved with the `get_changes(autodoc)`
 -- function:
+--
+--- select * from get_changes('{"foo":{"bar":1}}'::jsonb::autodoc);
+--
+-- ## Actor Ids
+--
+-- Automerge supports a notion of "Actor Ids" that identify the actors
+-- making concurrent changes to documents.  This UUID data can be get
+-- and set with `get_actor_id(autodoc)` and `set_actor_id(autodoc,
+-- uuid)`:
+--
+
+select get_actor_id(set_actor_id('{"foo":1}'::jsonb::autodoc, '97131c66344c48e8b93249aabff6b2f2'));

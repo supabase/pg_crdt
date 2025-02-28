@@ -23,6 +23,8 @@ bool abort_cb(AMstack** stack, void* data) {
     static char buffer[512] = {0};
 	AMstatus status;
     char const* suffix = NULL;
+    char* c_msg = NULL;
+
     if (!stack) {
         suffix = "stack*";
     } else if (!*stack) {
@@ -50,7 +52,7 @@ bool abort_cb(AMstack** stack, void* data) {
     if (buffer[0]) {
         AMbyteSpan bs;
         bs = AMresultError((*stack)->result);
-        char* const c_msg = pnstrdup((const char *)bs.src, bs.count);
+        c_msg = pnstrdup((const char *)bs.src, bs.count);
 		ereport(ERROR, (errmsg("%s; %s.\n", pstrdup(buffer), c_msg)));
         return false;
     }
