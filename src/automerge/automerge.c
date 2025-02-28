@@ -31,8 +31,6 @@ bool abort_cb(AMstack** stack, void* data) {
         suffix = "result";
     }
     if (suffix) {
-        free(data);
-        AMstackFree(stack);
 		ereport(ERROR, (errmsg("Null `AM%s*`.\n", suffix)));
         return false;
     }
@@ -50,14 +48,12 @@ bool abort_cb(AMstack** stack, void* data) {
             sprintf(buffer, "Unknown `AMstatus` tag %d", status);
     }
     if (buffer[0]) {
-        char* const c_msg = AMstrdup(AMresultError((*stack)->result), NULL);
-        free(data);
-        AMstackFree(stack);
-		ereport(ERROR, (errmsg("%s; %s.\n", buffer, c_msg)));
-        // free(c_msg);
+        AMbyteSpan bs;
+        bs = AMresultError((*stack)->result);
+        char* const c_msg = pnstrdup((const char *)bs.src, bs.count);
+		ereport(ERROR, (errmsg("%s; %s.\n", pstrdup(buffer), c_msg)));
         return false;
     }
-    free(data);
     return true;
 }
 

@@ -20,4 +20,7 @@ services:
     cap_add:
       - SYS_PTRACE
     tty: false
-
+    volumes:
+      - ./sql:/home/app/sql
+      - ./results:/home/app/results
+      - ./expected:/home/app/expected

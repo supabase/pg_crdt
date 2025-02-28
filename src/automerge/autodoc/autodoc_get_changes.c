@@ -27,6 +27,7 @@ Datum autodoc_get_changes(PG_FUNCTION_ARGS)
                                AMgetChanges(doc->doc, NULL),
                                abort_cb,
                                AMexpect(AM_VAL_TYPE_CHANGE));
+
         state->changes = (AMitems *) palloc(sizeof(AMitems));
         memcpy(state->changes, &changes, sizeof(AMitems));
         funcctx->user_fctx = state;
@@ -40,6 +41,7 @@ Datum autodoc_get_changes(PG_FUNCTION_ARGS)
     if ((item = AMitemsNext(state->changes, 1)) != NULL) {
         AMitemToChange(item, &itemchange);
         rawbs = AMchangeRawBytes(itemchange);
+        raw = palloc0(rawbs.count);
         memcpy(raw, rawbs.src, rawbs.count);
         change = new_expanded_autochange(CurrentMemoryContext, raw, rawbs.count);
         SRF_RETURN_NEXT(funcctx, EOHPGetRWDatum(&change->hdr));
