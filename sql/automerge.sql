@@ -19,7 +19,7 @@ set search_path to public,automerge;
 -- `automerge.autodoc`.  This type can be created by casting a jsonb
 -- object to `autodoc`:
 
-select '{"foo":1}'::jsonb::autodoc;
+select pg_typeof('{"foo":1}'::jsonb::autodoc);
 
 -- An `autodoc` instance looks like a `bytea` type, which internally
 -- encodes the state of the document.  This casting operation supports
@@ -36,17 +36,13 @@ select '{"foo":1}'::jsonb::autodoc::jsonb;
 -- timestamps and counters.  These types are ignored when casting to
 -- jsonb, so be aware of that.
 
--- # Merging documents
+-- ## Merging documents
 --
 -- Documents can be merged together into one:
 
 select merge('{"foo":1}'::jsonb::autodoc, '{"bar":2}'::jsonb::autodoc)::jsonb;
 
--- Automerge follows its own CRDT rules to resolve conflicting keys.
-
-select merge('{"foo":1}'::jsonb::autodoc, '{"foo":2}'::jsonb::autodoc)::jsonb;
-
--- # Getting scalar values
+-- ## Getting scalar values
 --
 -- Scalar values can be retrived from the document by their key:
 
@@ -58,10 +54,15 @@ select get_double('{"foo":3.1451}'::jsonb::autodoc, 'foo');
 
 select get_bool('{"foo":true}'::jsonb::autodoc, 'foo');
 
--- # Getting mapping values
+-- ## Getting mapping values
 --
 -- Mapping values can be retrived from the document by their key,
 -- which is returned in a new document that contains only that
 -- mapping:
-
--- select get_map('{"foo":{"bar":1}}'::jsonb::autodoc, 'foo');
+--
+--- select get_map('{"foo":{"bar":1}}'::jsonb::autodoc, 'foo');
+--
+-- ## Getting Changes
+--
+-- All changes can be retrieved with the `get_changes(autodoc)`
+-- function:
