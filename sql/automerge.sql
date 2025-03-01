@@ -50,7 +50,7 @@ select get_int('{"foo":1}'::jsonb::autodoc, 'foo');
 
 select get_str('{"foo":"bar"}'::jsonb::autodoc, 'foo');
 
-select get_double('{"foo":3.1451}'::jsonb::autodoc, 'foo');
+select get_double('{"foo":3.1459}'::jsonb::autodoc, 'foo');
 
 select get_bool('{"foo":true}'::jsonb::autodoc, 'foo');
 
