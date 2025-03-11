@@ -64,3 +64,9 @@ _PG_init(void)
 {
 	LOGF();
 }
+
+
+/* Local Variables: */
+/* mode: c */
+/* c-file-style: "postgresql" */
+/* End: */

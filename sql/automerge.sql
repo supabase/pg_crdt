@@ -48,11 +48,19 @@ select merge('{"foo":1}'::jsonb::autodoc, '{"bar":2}'::jsonb::autodoc)::jsonb;
 
 select get_int('{"foo":1}'::jsonb::autodoc, 'foo');
 
+select set_int('{"foo":1}'::jsonb::autodoc, 'bar', 2)::jsonb;
+
 select get_str('{"foo":"bar"}'::jsonb::autodoc, 'foo');
 
-select get_double('{"foo":3.1459}'::jsonb::autodoc, 'foo');
+select set_str('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang')::jsonb;
+
+select get_double('{"pi":3.1459}'::jsonb::autodoc, 'pi');
+
+select set_double('{"pi":3.1459}'::jsonb::autodoc, 'e', 2.71828)::jsonb;
 
 select get_bool('{"foo":true}'::jsonb::autodoc, 'foo');
+
+select set_bool('{"foo":true}'::jsonb::autodoc, 'bar', false)::jsonb;
 
 -- ## Getting mapping values
 --
