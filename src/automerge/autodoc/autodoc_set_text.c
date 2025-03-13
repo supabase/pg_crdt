@@ -5,6 +5,7 @@ Datum autodoc_set_text(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
 	text *key;
 	text *val;
+	char *val_str;
     AMobjId const *text_id;
 
 	LOGF();
@@ -23,13 +24,16 @@ Datum autodoc_set_text(PG_FUNCTION_ARGS) {
 			abort_cb,
 			AMexpect(AM_VAL_TYPE_OBJ_TYPE)));
 
-    AMstackItem(&doc->stack,
-				AMspliceText(doc->doc,
-							 text_id,
-							 0, 0,
-							 AMstr(text_to_cstring(val))),
-				abort_cb,
-				AMexpect(AM_VAL_TYPE_VOID));
+	val_str = text_to_cstring(val);
+	if (strlen(val_str)) {
+		AMstackItem(&doc->stack,
+					AMspliceText(doc->doc,
+								 text_id,
+								 0, 0,
+								 AMstr(val_str)),
+					abort_cb,
+					AMexpect(AM_VAL_TYPE_VOID));
+	}
 
 	AUTODOC_RETURN(doc);
 }

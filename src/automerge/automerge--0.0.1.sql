@@ -6,12 +6,12 @@ CREATE TYPE autodoc;
 CREATE FUNCTION autodoc_in(cstring)
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_in'
-LANGUAGE C STRICT;
+LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION autodoc_out(autodoc)
 RETURNS cstring
 AS '$libdir/automerge', 'autodoc_out'
-LANGUAGE C STRICT;
+LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE autodoc (
     input = autodoc_in,
@@ -26,12 +26,12 @@ CREATE TYPE autochange;
 CREATE FUNCTION autochange_in(cstring)
 RETURNS autochange
 AS '$libdir/automerge', 'autochange_in'
-LANGUAGE C STRICT;
+LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION autochange_out(autochange)
 RETURNS cstring
 AS '$libdir/automerge', 'autochange_out'
-LANGUAGE C STRICT;
+LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE autochange (
     input = autochange_in,
@@ -81,16 +81,6 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_set_str'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION get_text(doc autodoc, key text)
-RETURNS text
-AS '$libdir/automerge', 'autodoc_get_text'
-LANGUAGE C STRICT;
-
-CREATE FUNCTION set_text(doc autodoc, key text, val text)
-RETURNS autodoc
-AS '$libdir/automerge', 'autodoc_set_text'
-LANGUAGE C STRICT;
-
 CREATE FUNCTION get_int(doc autodoc, key text)
 RETURNS bigint
 AS '$libdir/automerge', 'autodoc_get_int'
@@ -119,6 +109,21 @@ LANGUAGE C STRICT;
 CREATE FUNCTION set_bool(doc autodoc, key text, val bool)
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_set_bool'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION get_text(doc autodoc, key text)
+RETURNS text
+AS '$libdir/automerge', 'autodoc_get_text'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION set_text(doc autodoc, key text, val text)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_set_text'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION splice_text(doc autodoc, key text, pos bigint, del bigint, val text)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_splice_text'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION autodoc_from_jsonb(jsonb, message text)

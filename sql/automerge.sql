@@ -54,10 +54,6 @@ select get_str('{"foo":"bar"}'::jsonb::autodoc, 'foo');
 
 select set_str('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang')::jsonb;
 
-select set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang')::jsonb;
-
-select get_text(set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang'), 'bing');
-
 select get_double('{"pi":3.1459}'::jsonb::autodoc, 'pi');
 
 select set_double('{"pi":3.1459}'::jsonb::autodoc, 'e', 2.71828)::jsonb;
@@ -66,13 +62,15 @@ select get_bool('{"foo":true}'::jsonb::autodoc, 'foo');
 
 select set_bool('{"foo":true}'::jsonb::autodoc, 'bar', false)::jsonb;
 
--- ## Getting mapping values
+-- ## Getting, setting and splicing text
 --
--- Mapping values can be retrived from the document by their key,
--- which is returned in a new document that contains only that
--- mapping:
---
---- select get_map('{"foo":{"bar":1}}'::jsonb::autodoc, 'foo');
+
+select set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang')::jsonb;
+
+select get_text(set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang'), 'bing');
+
+select splice_text(set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
+
 --
 -- ## Getting Changes
 --
@@ -89,4 +87,7 @@ select set_bool('{"foo":true}'::jsonb::autodoc, 'bar', false)::jsonb;
 -- uuid)`:
 --
 
-select get_actor_id(set_actor_id('{"foo":1}'::jsonb::autodoc, '97131c66344c48e8b93249aabff6b2f2'));
+select get_actor_id(
+    set_actor_id('{"foo":1}'::jsonb::autodoc,
+    '97131c66344c48e8b93249aabff6b2f2')
+    );
