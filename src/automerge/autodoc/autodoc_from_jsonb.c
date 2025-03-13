@@ -48,10 +48,10 @@ Datum autodoc_from_jsonb(PG_FUNCTION_ARGS) {
     _object_walk(&it, doc, AM_ROOT);
 
 	if (message != NULL) {
-		/* AMstackItem(&doc->stack, */
-		/* 			AMcommit(doc->doc, AMstr(text_to_cstring(message)), NULL), */
-		/* 			abort_cb, */
-		/* 			AMexpect(AM_VAL_TYPE_CHANGE_HASH)); */
+		AMstackItem(&doc->stack,
+					AMcommit(doc->doc, AMstr(text_to_cstring(message)), NULL),
+					abort_cb,
+					AMexpect(AM_VAL_TYPE_CHANGE_HASH));
 	}
 
     AUTODOC_RETURN(doc);

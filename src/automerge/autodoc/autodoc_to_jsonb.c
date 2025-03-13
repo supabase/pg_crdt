@@ -65,74 +65,93 @@ static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId const *objid, Json
         valtype = AMitemValType(item);
         switch (valtype) {
 
-        case AM_VAL_TYPE_OBJ_TYPE: {
-            itemid = AMitemObjId(item);
-            itemtype = AMobjObjType(doc->doc, itemid);
-            switch(itemtype) {
-            case AM_OBJ_TYPE_MAP:
-                _am_walk_map(doc, itemid, state);
-                break;
-            case AM_OBJ_TYPE_LIST:
-                _am_walk_list(doc, itemid,  state);
-                break;
-            default:
-                break;
-            }
-            break;
-        }
-        case AM_VAL_TYPE_STR:
-            if (AMitemToStr(item, &bs)) {
-                str = palloc(bs.count+1);
-                memcpy(str, bs.src, bs.count);
-                str[bs.count] = '\0';
-                val.type = jbvString;
-                val.val.string.val = str;
-                val.val.string.len = bs.count;
-                pushJsonbValue(&state, WJB_VALUE, &val);
-            } else {
-				ereport(ERROR, (errmsg("AMitemToStr failed")));
-            }
-            break;
+			case AM_VAL_TYPE_OBJ_TYPE: {
+				itemid = AMitemObjId(item);
+				itemtype = AMobjObjType(doc->doc, itemid);
 
-        case AM_VAL_TYPE_INT:
-            if (AMitemToInt(item, &intv)) {
-                valdatum = DirectFunctionCall1(int8_numeric, Int64GetDatum(intv));
-                val.type = jbvNumeric;
-                val.val.numeric = DatumGetNumeric(valdatum);
-                pushJsonbValue(&state, WJB_VALUE, &val);
-            } else {
-				ereport(ERROR, (errmsg("AMitemToInt failed")));
-            }
-            break;
+				switch(itemtype) {
+					case AM_OBJ_TYPE_MAP:
+						_am_walk_map(doc, itemid, state);
+						break;
+					case AM_OBJ_TYPE_LIST:
+						_am_walk_list(doc, itemid, state);
+						break;
+					case AM_OBJ_TYPE_TEXT:
+						if (AMitemToStr(AMstackItem(&doc->stack,
+													AMtext(doc->doc, itemid, NULL),
+													abort_cb,
+													AMexpect(AM_VAL_TYPE_STR)),
+										&bs)) {
+							str = palloc(bs.count+1);
+							memcpy(str, bs.src, bs.count);
+							str[bs.count] = '\0';
+							val.type = jbvString;
+							val.val.string.val = str;
+							val.val.string.len = bs.count;
+							pushJsonbValue(&state, WJB_VALUE, &val);
+						} else {
+							ereport(ERROR, (errmsg("AMitemToStr failed")));
+						}
+						break;
 
-        case AM_VAL_TYPE_F64:
-            if (AMitemToF64(item, &floatv)) {
-                valdatum = DirectFunctionCall1(float8_numeric, Float8GetDatumFast(floatv));
-                val.type = jbvNumeric;
-                val.val.numeric = DatumGetNumeric(valdatum);
-                pushJsonbValue(&state, WJB_VALUE, &val);
-            } else {
-				ereport(ERROR, (errmsg("AMitemToF64 failed")));
-            }
-            break;
+					default:
+						break;
+				}
+				break;
+			}
+			case AM_VAL_TYPE_STR:
+				if (AMitemToStr(item, &bs)) {
+					str = palloc(bs.count+1);
+					memcpy(str, bs.src, bs.count);
+					str[bs.count] = '\0';
+					val.type = jbvString;
+					val.val.string.val = str;
+					val.val.string.len = bs.count;
+					pushJsonbValue(&state, WJB_VALUE, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToStr failed")));
+				}
+				break;
 
-        case AM_VAL_TYPE_BOOL:
-            if (AMitemToBool(item, &boolv)) {
-                val.type = jbvBool;
-                val.val.boolean = boolv;
-                pushJsonbValue(&state, WJB_VALUE, &val);
-            } else {
-				ereport(ERROR, (errmsg("AMitemToBool failed")));
-            }
-            break;
+			case AM_VAL_TYPE_INT:
+				if (AMitemToInt(item, &intv)) {
+					valdatum = DirectFunctionCall1(int8_numeric, Int64GetDatum(intv));
+					val.type = jbvNumeric;
+					val.val.numeric = DatumGetNumeric(valdatum);
+					pushJsonbValue(&state, WJB_VALUE, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToInt failed")));
+				}
+				break;
 
-        case AM_VAL_TYPE_NULL:
-            val.type = jbvNull;
-            pushJsonbValue(&state, WJB_VALUE, &val);
-            break;
+			case AM_VAL_TYPE_F64:
+				if (AMitemToF64(item, &floatv)) {
+					valdatum = DirectFunctionCall1(float8_numeric, Float8GetDatumFast(floatv));
+					val.type = jbvNumeric;
+					val.val.numeric = DatumGetNumeric(valdatum);
+					pushJsonbValue(&state, WJB_VALUE, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToF64 failed")));
+				}
+				break;
 
-        default:
-            break;
+			case AM_VAL_TYPE_BOOL:
+				if (AMitemToBool(item, &boolv)) {
+					val.type = jbvBool;
+					val.val.boolean = boolv;
+					pushJsonbValue(&state, WJB_VALUE, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToBool failed")));
+				}
+				break;
+
+			case AM_VAL_TYPE_NULL:
+				val.type = jbvNull;
+				pushJsonbValue(&state, WJB_VALUE, &val);
+				break;
+
+			default:
+				break;
         }
     }
     return pushJsonbValue(&state, WJB_END_OBJECT, NULL);
@@ -170,64 +189,64 @@ static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, Jso
         valtype = AMitemValType(item);
         switch (valtype) {
 
-        case AM_VAL_TYPE_OBJ_TYPE: {
-            itemid = AMitemObjId(item);
-            itemtype = AMobjObjType(doc->doc, itemid);
-            switch(itemtype) {
-            case AM_OBJ_TYPE_MAP:
-                _am_walk_map(doc, itemid, state);
-                break;
-            case AM_OBJ_TYPE_LIST:
-                _am_walk_list(doc, itemid,  state);
-                break;
-            default:
-                break;
-            }
-            break;
-        }
-        case AM_VAL_TYPE_STR:
-            if (AMitemToStr(item, &bs)) {
-                str = palloc(bs.count+1);
-                memcpy(str, bs.src, bs.count);
-                str[bs.count] = '\0';
-                val.type = jbvString;
-                val.val.string.val = str;
-                val.val.string.len = bs.count;
-                pushJsonbValue(&state, WJB_ELEM, &val);
-            } else {
-				ereport(ERROR, (errmsg("AMitemToStr failed")));
-            }
-            break;
+			case AM_VAL_TYPE_OBJ_TYPE: {
+				itemid = AMitemObjId(item);
+				itemtype = AMobjObjType(doc->doc, itemid);
+				switch(itemtype) {
+					case AM_OBJ_TYPE_MAP:
+						_am_walk_map(doc, itemid, state);
+						break;
+					case AM_OBJ_TYPE_LIST:
+						_am_walk_list(doc, itemid,  state);
+						break;
+					default:
+						break;
+				}
+				break;
+			}
+			case AM_VAL_TYPE_STR:
+				if (AMitemToStr(item, &bs)) {
+					str = palloc(bs.count+1);
+					memcpy(str, bs.src, bs.count);
+					str[bs.count] = '\0';
+					val.type = jbvString;
+					val.val.string.val = str;
+					val.val.string.len = bs.count;
+					pushJsonbValue(&state, WJB_ELEM, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToStr failed")));
+				}
+				break;
 
-        case AM_VAL_TYPE_INT:
-            if (AMitemToInt(item, &intv)) {
-                valdatum = DirectFunctionCall1(int8_numeric, Int64GetDatum(intv));
-                val.type = jbvNumeric;
-                val.val.numeric = DatumGetNumeric(valdatum);
-                pushJsonbValue(&state, WJB_ELEM, &val);
-            } else {
-				ereport(ERROR, (errmsg("AMitemToInt failed")));
-            }
-            break;
+			case AM_VAL_TYPE_INT:
+				if (AMitemToInt(item, &intv)) {
+					valdatum = DirectFunctionCall1(int8_numeric, Int64GetDatum(intv));
+					val.type = jbvNumeric;
+					val.val.numeric = DatumGetNumeric(valdatum);
+					pushJsonbValue(&state, WJB_ELEM, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToInt failed")));
+				}
+				break;
 
-        case AM_VAL_TYPE_F64:
-            if (AMitemToF64(item, &floatv)) {
-                valdatum = DirectFunctionCall1(float8_numeric, Float8GetDatumFast(floatv));
-                val.type = jbvNumeric;
-                val.val.numeric = DatumGetNumeric(valdatum);
-                pushJsonbValue(&state, WJB_ELEM, &val);
-            } else {
-				ereport(ERROR, (errmsg("AMitemToF64 failed")));
-            }
-            break;
+			case AM_VAL_TYPE_F64:
+				if (AMitemToF64(item, &floatv)) {
+					valdatum = DirectFunctionCall1(float8_numeric, Float8GetDatumFast(floatv));
+					val.type = jbvNumeric;
+					val.val.numeric = DatumGetNumeric(valdatum);
+					pushJsonbValue(&state, WJB_ELEM, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToF64 failed")));
+				}
+				break;
 
-        case AM_VAL_TYPE_NULL:
-            val.type = jbvNull;
-            pushJsonbValue(&state, WJB_ELEM, &val);
-            break;
+			case AM_VAL_TYPE_NULL:
+				val.type = jbvNull;
+				pushJsonbValue(&state, WJB_ELEM, &val);
+				break;
 
-        default:
-            break;
+			default:
+				break;
         }
     }
     return pushJsonbValue(&state, WJB_END_ARRAY, NULL);
