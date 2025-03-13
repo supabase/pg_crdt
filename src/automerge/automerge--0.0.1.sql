@@ -81,6 +81,11 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_set_str'
 LANGUAGE C STRICT;
 
+CREATE FUNCTION get_text(doc autodoc, key text)
+RETURNS text
+AS '$libdir/automerge', 'autodoc_get_text'
+LANGUAGE C STRICT;
+
 CREATE FUNCTION set_text(doc autodoc, key text, val text)
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_set_text'

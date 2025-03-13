@@ -56,6 +56,8 @@ select set_str('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang')::jsonb;
 
 select set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang')::jsonb;
 
+select get_text(set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang'), 'bing');
+
 select get_double('{"pi":3.1459}'::jsonb::autodoc, 'pi');
 
 select set_double('{"pi":3.1459}'::jsonb::autodoc, 'e', 2.71828)::jsonb;
