@@ -19,7 +19,7 @@ set search_path to public,automerge;
 -- `automerge.autodoc`.  This type can be created by casting a jsonb
 -- object to `autodoc`:
 
-select pg_typeof('{"foo":1}'::jsonb::autodoc);
+select pg_typeof('{"foo":1}'::autodoc);
 
 -- An `autodoc` instance looks like a `bytea` type, which internally
 -- encodes the state of the document.  This casting operation supports
@@ -29,7 +29,7 @@ select pg_typeof('{"foo":1}'::jsonb::autodoc);
 --
 -- You can cast back to `jsonb`:
 
-select '{"foo":1}'::jsonb::autodoc::jsonb;
+select '{"foo":1}'::autodoc::jsonb;
 
 -- Note that casting to jsonb is a potentially lossy operation, since
 -- autodoc support more types of values than jsonb does, such as
@@ -40,45 +40,75 @@ select '{"foo":1}'::jsonb::autodoc::jsonb;
 --
 -- Documents can be merged together into one:
 
-select merge('{"foo":1}'::jsonb::autodoc, '{"bar":2}'::jsonb::autodoc)::jsonb;
+select merge('{"foo":1}'::autodoc, '{"bar":2}'::autodoc)::jsonb;
 
 -- ## Getting scalar values
 --
 -- Scalar values can be retrived from the document by their key:
 
-select get_int('{"foo":1}'::jsonb::autodoc, 'foo');
+-- ### Integers
 
-select set_int('{"foo":1}'::jsonb::autodoc, 'bar', 2)::jsonb;
+select get_int('{"foo":1}'::autodoc, 'foo');
 
-select get_str('{"foo":"bar"}'::jsonb::autodoc, 'foo');
+select put_int('{"foo":1}'::autodoc, 'bar', 2)::jsonb;
 
-select set_str('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang')::jsonb;
+select get_int('{"foo":1}'::autodoc, 'bar');
 
-select get_double('{"pi":3.1459}'::jsonb::autodoc, 'pi');
+-- ### Strings
 
-select set_double('{"pi":3.1459}'::jsonb::autodoc, 'e', 2.71828)::jsonb;
+select get_str('{"foo":"bar"}'::autodoc, 'foo');
 
-select get_bool('{"foo":true}'::jsonb::autodoc, 'foo');
+select put_str('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
 
-select set_bool('{"foo":true}'::jsonb::autodoc, 'bar', false)::jsonb;
+select get_str('{"foo":"bar"}'::autodoc, 'bar');
 
--- ## Getting, setting and splicing text
+-- ### Doubles
+
+select get_double('{"pi":3.14159}'::autodoc, 'pi');
+
+select put_double('{"pi":3.14159}'::autodoc, 'e', 2.71828)::jsonb;
+
+select get_double('{"pi":3.14159}'::autodoc, 'e');
+
+-- ### Bools
+
+select get_bool('{"foo":true}'::autodoc, 'foo');
+
+select put_bool('{"foo":true}'::autodoc, 'bar', false)::jsonb;
+
+select get_bool('{"foo":true}'::autodoc, 'bar');
+
+-- ### Counters
 --
+-- NOTE: Counters have no jsonb input representation, on output they
+-- are represented as JSON integer.
 
-select set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang')::jsonb;
+select put_counter('{}'::autodoc, 'bar', 1)::jsonb;
 
-select get_text(set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang'), 'bing');
+select get_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar');
 
-select splice_text(set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar'), 'bar');
 
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', 2), 'bar');
+
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', -2), 'bar');
+
+select get_counter(put_counter('{}'::autodoc, 'bar', 1), 'foo');
+
+-- ### Text
 --
--- ## Getting Changes
+-- Automerge Text objects are like strings but have support for
+-- changing ("splicing") text in and out efficiently.
 --
--- All changes can be retrieved with the `get_changes(autodoc)`
--- function:
---
---- select * from get_changes('{"foo":{"bar":1}}'::jsonb::autodoc);
---
+-- NOTE: Text have no jsonb input representation, on output they are
+-- represented as JSON string.
+
+select put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
+
+select get_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), 'bing');
+
+select splice_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
+
 -- ## Actor Ids
 --
 -- Automerge supports a notion of "Actor Ids" that identify the actors
@@ -88,6 +118,18 @@ select splice_text(set_text('{"foo":"bar"}'::jsonb::autodoc, 'bing', 'bang'), 'b
 --
 
 select get_actor_id(
-    set_actor_id('{"foo":1}'::jsonb::autodoc,
+    set_actor_id('{"foo":1}'::autodoc,
     '97131c66344c48e8b93249aabff6b2f2')
     );
+
+-- ### Timestamp
+--
+-- TODO
+--
+-- ## Getting Changes
+--
+-- All changes can be retrieved with the `get_changes(autodoc)`
+-- function:
+--
+--- select * from get_changes('{"foo":{"bar":1}}'::autodoc);
+--

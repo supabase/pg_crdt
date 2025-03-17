@@ -14,14 +14,29 @@ Datum autodoc_from_jsonb(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
 	text *message = NULL;
 	Jsonb *jb;
-    JsonbIterator *it;
-	JsonbValue v;
 	LOGF();
 
     jb = PG_GETARG_JSONB_P(0);
 	if (PG_NARGS() > 1 && !PG_ARGISNULL(1)) {
-		message = PG_GETARG_TEXT_PP(0);
+		message = PG_GETARG_TEXT_PP(1);
 	}
+
+	doc = _autodoc_from_jsonb(jb);
+
+	if (message != NULL) {
+		AMstackItem(&doc->stack,
+					AMcommit(doc->doc, AMstr(text_to_cstring(message)), NULL),
+					_abort_cb,
+					AMexpect(AM_VAL_TYPE_CHANGE_HASH));
+	}
+
+    AUTODOC_RETURN(doc);
+}
+
+autodoc_Autodoc *_autodoc_from_jsonb(Jsonb *jb) {
+	autodoc_Autodoc *doc;
+    JsonbIterator *it;
+	JsonbValue v;
 
 	if (JB_ROOT_IS_SCALAR(jb))
 		ereport(ERROR,
@@ -46,16 +61,9 @@ Datum autodoc_from_jsonb(PG_FUNCTION_ARGS) {
  	doc = new_expanded_autodoc(NULL, CurrentMemoryContext);
 
     _object_walk(&it, doc, AM_ROOT);
-
-	if (message != NULL) {
-		AMstackItem(&doc->stack,
-					AMcommit(doc->doc, AMstr(text_to_cstring(message)), NULL),
-					abort_cb,
-					AMexpect(AM_VAL_TYPE_CHANGE_HASH));
-	}
-
-    AUTODOC_RETURN(doc);
+	return doc;
 }
+
 
 static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const *objid)
 {
@@ -76,7 +84,7 @@ static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const
 																  objid,
 																  AMstr(key),
 																  AM_OBJ_TYPE_MAP),
-												   abort_cb,
+												   _abort_cb,
 												   AMexpect(AM_VAL_TYPE_OBJ_TYPE)));
 				_object_walk(it, doc, newobjid);
 				break;
@@ -91,7 +99,7 @@ static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const
 																  objid,
 																  AMstr(key),
 																  AM_OBJ_TYPE_LIST),
-												   abort_cb,
+												   _abort_cb,
 												   AMexpect(AM_VAL_TYPE_OBJ_TYPE)));
 				_array_walk(it, doc, newobjid);
 				break;
@@ -108,7 +116,7 @@ static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const
 									AMmapPutStr(doc->doc, objid,
 												AMstr(key),
 												AMstr(v.val.string.val)),
-									abort_cb,
+									_abort_cb,
 									AMexpect(AM_VAL_TYPE_VOID));
 						break;
 					case jbvNumeric: {
@@ -121,7 +129,7 @@ static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const
 										AMmapPutInt(doc->doc, objid,
 													AMstr(key),
 													int_value),
-										abort_cb,
+										_abort_cb,
 										AMexpect(AM_VAL_TYPE_VOID));
 						} else {
 							double float_value = DatumGetFloat8(DirectFunctionCall1(numeric_float8, num_datum));
@@ -129,7 +137,7 @@ static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const
 										AMmapPutF64(doc->doc, objid,
 													AMstr(key),
 													float_value),
-										abort_cb,
+										_abort_cb,
 										AMexpect(AM_VAL_TYPE_VOID));
 						}
 						break;
@@ -139,14 +147,14 @@ static void _object_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const
 									AMmapPutBool(doc->doc, objid,
 												 AMstr(key),
 												 v.val.boolean),
-									abort_cb,
+									_abort_cb,
 									AMexpect(AM_VAL_TYPE_VOID));
 						break;
 					case jbvNull:
 						AMstackItem(NULL,
 									AMmapPutNull(doc->doc, objid,
 												 AMstr(key)),
-									abort_cb,
+									_abort_cb,
 									AMexpect(AM_VAL_TYPE_VOID));
 						break;
 					default:
@@ -186,7 +194,7 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 																   SIZE_MAX,
 																   true,
 																   AM_OBJ_TYPE_MAP),
-												   abort_cb,
+												   _abort_cb,
 												   AMexpect(AM_VAL_TYPE_OBJ_TYPE)));
 				_object_walk(it, doc, newobjid);
 				break;
@@ -203,7 +211,7 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 																   SIZE_MAX,
 																   true,
 																   AM_OBJ_TYPE_LIST),
-												   abort_cb,
+												   _abort_cb,
 												   AMexpect(AM_VAL_TYPE_OBJ_TYPE)));
 				_array_walk(it, doc, newobjid);
 				break;
@@ -222,7 +230,7 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 						AMstackItem(NULL,
 									AMlistPutStr(doc->doc, objid,
 												 SIZE_MAX, true, AMstr(v.val.string.val)),
-									abort_cb,
+									_abort_cb,
 									AMexpect(AM_VAL_TYPE_VOID));
 						break;
 					case jbvNumeric: {
@@ -236,7 +244,7 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 													 SIZE_MAX,
 													 true,
 													 int_value),
-										abort_cb,
+										_abort_cb,
 										AMexpect(AM_VAL_TYPE_VOID));
 						} else {
 							double float_value = DatumGetFloat8(DirectFunctionCall1(numeric_float8, num_datum));
@@ -245,7 +253,7 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 													 SIZE_MAX,
 													 true,
 													 float_value),
-										abort_cb,
+										_abort_cb,
 										AMexpect(AM_VAL_TYPE_VOID));
 						}
 						break;
@@ -254,14 +262,14 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 						AMstackItem(NULL,
 									AMlistPutBool(doc->doc, objid,
 												  SIZE_MAX, true, v.val.boolean),
-									abort_cb,
+									_abort_cb,
 									AMexpect(AM_VAL_TYPE_VOID));
 						break;
 					case jbvNull:
 						AMstackItem(NULL,
 									AMlistPutNull(doc->doc, objid,
 												  SIZE_MAX, true),
-									abort_cb,
+									_abort_cb,
 									AMexpect(AM_VAL_TYPE_VOID));
 						break;
 					default:

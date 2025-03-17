@@ -43,7 +43,7 @@ static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId const *objid, Json
 
     keys = AMstackItems(&doc->stack,
                         AMkeys(doc->doc, objid, NULL),
-                        abort_cb,
+                        _abort_cb,
                         AMexpect(AM_VAL_TYPE_STR));
 
     pushJsonbValue(&state, WJB_BEGIN_OBJECT, NULL);
@@ -59,8 +59,8 @@ static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId const *objid, Json
         pushJsonbValue(&state, WJB_KEY, &key);
         item = AMstackItem(&doc->stack,
                            AMmapGet(doc->doc, objid, bs, NULL),
-                           abort_cb,
-                           AMexpect(AM_VAL_TYPE_OBJ_TYPE));
+                           _abort_cb,
+                           NULL);
 
         valtype = AMitemValType(item);
         switch (valtype) {
@@ -79,7 +79,7 @@ static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId const *objid, Json
 					case AM_OBJ_TYPE_TEXT:
 						if (AMitemToStr(AMstackItem(&doc->stack,
 													AMtext(doc->doc, itemid, NULL),
-													abort_cb,
+													_abort_cb,
 													AMexpect(AM_VAL_TYPE_STR)),
 										&bs)) {
 							str = palloc(bs.count+1);
@@ -150,6 +150,17 @@ static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId const *objid, Json
 				pushJsonbValue(&state, WJB_VALUE, &val);
 				break;
 
+			case AM_VAL_TYPE_COUNTER:
+				if (AMitemToCounter(item, &intv)) {
+					valdatum = DirectFunctionCall1(int8_numeric, Int64GetDatum(intv));
+					val.type = jbvNumeric;
+					val.val.numeric = DatumGetNumeric(valdatum);
+					pushJsonbValue(&state, WJB_VALUE, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToCounter failed")));
+				}
+				break;
+
 			default:
 				break;
         }
@@ -174,7 +185,7 @@ static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, Jso
 
     items = AMstackItems(&doc->stack,
                          AMlistRange(doc->doc, objid, 0, SIZE_MAX, NULL),
-                         abort_cb,
+                         _abort_cb,
                          AMexpect(AM_VAL_TYPE_UINT));
 
     pushJsonbValue(&state, WJB_BEGIN_ARRAY, NULL);
@@ -183,7 +194,7 @@ static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, Jso
         AMitemPos(itemkey, &itempos);
         item = AMstackItem(&doc->stack,
                            AMlistGet(doc->doc, objid, itempos, NULL),
-                           abort_cb,
+                           _abort_cb,
                            AMexpect(AM_VAL_TYPE_OBJ_TYPE));
 
         valtype = AMitemValType(item);
@@ -243,6 +254,17 @@ static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, Jso
 			case AM_VAL_TYPE_NULL:
 				val.type = jbvNull;
 				pushJsonbValue(&state, WJB_ELEM, &val);
+				break;
+
+			case AM_VAL_TYPE_COUNTER:
+				if (AMitemToCounter(item, &intv)) {
+					valdatum = DirectFunctionCall1(int8_numeric, Int64GetDatum(intv));
+					val.type = jbvNumeric;
+					val.val.numeric = DatumGetNumeric(valdatum);
+					pushJsonbValue(&state, WJB_ELEM, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToCounter failed")));
+				}
 				break;
 
 			default:

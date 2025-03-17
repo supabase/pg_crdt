@@ -26,8 +26,8 @@ Datum autodoc_splice_text(PG_FUNCTION_ARGS) {
 				 AM_ROOT,
 				 AMstr(text_to_cstring(key)),
 				 NULL),
-		abort_cb,
-		AMexpect(AM_VAL_TYPE_CHANGE_HASH));
+		_abort_cb,
+		AMexpect(AM_VAL_TYPE_OBJ_TYPE));
 
 	valtype = AMitemValType(item);
 
@@ -49,7 +49,7 @@ Datum autodoc_splice_text(PG_FUNCTION_ARGS) {
 							 itemid,
 							 pos, del,
 							 AMstr(val_str)),
-				abort_cb,
+				_abort_cb,
 				AMexpect(AM_VAL_TYPE_VOID));
 
 	AUTODOC_RETURN(doc);

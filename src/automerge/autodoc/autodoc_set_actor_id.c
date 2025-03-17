@@ -14,13 +14,13 @@ Datum autodoc_set_actor_id(PG_FUNCTION_ARGS) {
 	AMitemToActorId(AMstackItem(
 						&doc->stack,
 						AMactorIdFromStr(AMstr(text_to_cstring(actor_text))),
-						abort_cb,
+						_abort_cb,
 						AMexpect(AM_VAL_TYPE_ACTOR_ID)),
 					&actor_id);
 
 	AMstackItem(&doc->stack,
 				AMsetActorId(doc->doc, actor_id),
-				abort_cb,
+				_abort_cb,
 				AMexpect(AM_VAL_TYPE_VOID));
 
 	AUTODOC_RETURN(doc);

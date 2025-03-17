@@ -21,7 +21,8 @@
 
 #define LOGF() elog(DEBUG1, __func__)
 
-bool abort_cb(AMstack**, void*);
+bool _abort_cb(AMstack**, void*);
+bool _is_integer(const char *s);
 
 void _PG_init(void);
 

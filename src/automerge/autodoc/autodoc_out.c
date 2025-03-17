@@ -15,7 +15,7 @@ Datum autodoc_out(PG_FUNCTION_ARGS)
 	doc = AUTODOC_GETARG(0);
     AMitemToBytes(AMstackItem(&doc->stack,
 							  AMsave(doc->doc),
-							  abort_cb,
+							  _abort_cb,
 							  AMexpect(AM_VAL_TYPE_BYTES)),
 				  &bs);
 

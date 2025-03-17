@@ -1,6 +1,8 @@
 #ifndef AUTODOC_H
 #define AUTODOC_H
 
+#include "../autochange/autochange.h"
+
 /* ID for debugging crosschecks */
 #define autodoc_MAGIC 319279583
 
@@ -29,8 +31,7 @@ typedef struct autodoc_Autodoc  {
 } autodoc_Autodoc;
 
 typedef struct autodoc_ChangesState {
-	autodoc_Autodoc *doc;
-    AMitems *changes;
+    autochange_Autochange **changes;
 } autodoc_ChangesState;
 
 /* Create a new autodoc datum. */
@@ -54,6 +55,8 @@ autodoc_Autodoc *DatumGetAutodoc(Datum d);
 
 /* Help macro to cast generic Datum header pointer to expanded Autodoc */
 #define AutodocGetEOHP(d) (autodoc_Autodoc *) DatumGetEOHP(d);
+
+autodoc_Autodoc *_autodoc_from_jsonb(Jsonb *);
 
 #endif /* AUTODOC_H */
 

@@ -22,9 +22,12 @@ Datum autodoc_get_text(PG_FUNCTION_ARGS) {
 				 AM_ROOT,
 				 AMstr(text_to_cstring(key)),
 				 NULL),
-		abort_cb,
-		AMexpect(AM_VAL_TYPE_CHANGE_HASH));
+		_abort_cb,
+		NULL);
 	valtype = AMitemValType(item);
+
+	if (valtype == AM_VAL_TYPE_VOID)
+		ereport(ERROR, errmsg("Key %s does not exist.", text_to_cstring(key)));
 
 	if (valtype != AM_VAL_TYPE_OBJ_TYPE)
 		ereport(ERROR, errmsg("Key %s is not an automerge object.", text_to_cstring(key)));
@@ -38,7 +41,7 @@ Datum autodoc_get_text(PG_FUNCTION_ARGS) {
 	if (AMitemToStr(
 			AMstackItem(&doc->stack,
 						AMtext(doc->doc, itemid, NULL),
-						abort_cb,
+						_abort_cb,
 						AMexpect(AM_VAL_TYPE_STR)),
 			&bs)) {
 		val = cstring_to_text_with_len((const char *)bs.src, bs.count);

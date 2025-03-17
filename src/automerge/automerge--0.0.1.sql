@@ -67,7 +67,7 @@ AS '$libdir/automerge', 'autochange_get_change_hash'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_changes(autodoc)
-RETURNS SETOF autochange
+RETURNS TABLE (hash bytea, change autochange)
 AS '$libdir/automerge', 'autodoc_get_changes'
 LANGUAGE C STRICT;
 
@@ -76,9 +76,9 @@ RETURNS text
 AS '$libdir/automerge', 'autodoc_get_str'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION set_str(doc autodoc, key text, val text)
+CREATE FUNCTION put_str(doc autodoc, key text, val text)
 RETURNS autodoc
-AS '$libdir/automerge', 'autodoc_set_str'
+AS '$libdir/automerge', 'autodoc_put_str'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_int(doc autodoc, key text)
@@ -86,9 +86,9 @@ RETURNS bigint
 AS '$libdir/automerge', 'autodoc_get_int'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION set_int(doc autodoc, key text, val bigint)
+CREATE FUNCTION put_int(doc autodoc, key text, val bigint)
 RETURNS autodoc
-AS '$libdir/automerge', 'autodoc_set_int'
+AS '$libdir/automerge', 'autodoc_put_int'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_double(doc autodoc, key text)
@@ -96,9 +96,9 @@ RETURNS float8
 AS '$libdir/automerge', 'autodoc_get_double'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION set_double(doc autodoc, key text, val float8)
+CREATE FUNCTION put_double(doc autodoc, key text, val float8)
 RETURNS autodoc
-AS '$libdir/automerge', 'autodoc_set_double'
+AS '$libdir/automerge', 'autodoc_put_double'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_bool(doc autodoc, key text)
@@ -106,9 +106,9 @@ RETURNS bool
 AS '$libdir/automerge', 'autodoc_get_bool'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION set_bool(doc autodoc, key text, val bool)
+CREATE FUNCTION put_bool(doc autodoc, key text, val bool)
 RETURNS autodoc
-AS '$libdir/automerge', 'autodoc_set_bool'
+AS '$libdir/automerge', 'autodoc_put_bool'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_text(doc autodoc, key text)
@@ -116,9 +116,24 @@ RETURNS text
 AS '$libdir/automerge', 'autodoc_get_text'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION set_text(doc autodoc, key text, val text)
+CREATE FUNCTION get_counter(doc autodoc, key text)
+RETURNS bigint
+AS '$libdir/automerge', 'autodoc_get_counter'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION put_counter(doc autodoc, key text, val bigint)
 RETURNS autodoc
-AS '$libdir/automerge', 'autodoc_set_text'
+AS '$libdir/automerge', 'autodoc_put_counter'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION inc_counter(doc autodoc, key text, val bigint default 1)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_inc_counter'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION put_text(doc autodoc, key text, val text)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_put_text'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION splice_text(doc autodoc, key text, pos bigint, del bigint, val text)

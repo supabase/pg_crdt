@@ -19,9 +19,13 @@ Datum autodoc_get_double(PG_FUNCTION_ARGS) {
 				 AM_ROOT,
 				 AMstr(text_to_cstring(key)),
 				 NULL),
-		abort_cb,
-		AMexpect(AM_VAL_TYPE_CHANGE_HASH));
+		_abort_cb,
+		NULL);
 	valtype = AMitemValType(item);
+
+	if (valtype == AM_VAL_TYPE_VOID)
+		ereport(ERROR, errmsg("Key %s does not exist.", text_to_cstring(key)));
+
 	if (valtype != AM_VAL_TYPE_F64)
 		ereport(ERROR, errmsg("Key %s is not an automerge f64.", text_to_cstring(key)));
 

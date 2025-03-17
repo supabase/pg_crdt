@@ -1,10 +1,10 @@
 #include "../automerge.h"
 
-PG_FUNCTION_INFO_V1(autodoc_get_bool);
-Datum autodoc_get_bool(PG_FUNCTION_ARGS) {
+PG_FUNCTION_INFO_V1(autodoc_get_counter);
+Datum autodoc_get_counter(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
 	text *key;
-	bool val;
+	int64_t val;
 	AMitem *item;
     AMvalType valtype;
 
@@ -26,13 +26,13 @@ Datum autodoc_get_bool(PG_FUNCTION_ARGS) {
 	if (valtype == AM_VAL_TYPE_VOID)
 		ereport(ERROR, errmsg("Key %s does not exist.", text_to_cstring(key)));
 
-	if (valtype != AM_VAL_TYPE_BOOL)
-		ereport(ERROR, errmsg("Key %s is not an automerge bool.", text_to_cstring(key)));
+	if (valtype != AM_VAL_TYPE_COUNTER)
+		ereport(ERROR, errmsg("Key %s is not an automerge counter.", text_to_cstring(key)));
 
-	if (!AMitemToBool(item, &val)) {
-		ereport(ERROR,(errmsg("AMitemToBool failed")));
+	if (!AMitemToCounter(item, &val)) {
+		ereport(ERROR,(errmsg("AMitemToCounter failed")));
 	}
-	PG_RETURN_BOOL(val);
+	PG_RETURN_INT64(val);
 }
 
 /* Local Variables: */

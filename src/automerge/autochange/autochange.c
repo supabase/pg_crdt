@@ -100,15 +100,15 @@ new_expanded_autochange(MemoryContext parentcontext, uint8_t const *flat_data, s
 	/* Switch to new object context */
 	oldcxt = MemoryContextSwitchTo(objcxt);
 
-	/* Setting flat size to zero tells us the object has been written. */
+	change->flat_data = NULL;
 	change->flat_size = 0;
 
 	change->stack = calloc(1, sizeof(AMstack));
 	AMitemToChange(AMstackItem(&change->stack,
-							AMchangeFromBytes(flat_data, flat_size),
-							abort_cb,
-							AMexpect(AM_VAL_TYPE_CHANGE)),
-				&change->change);
+							   AMchangeFromBytes(flat_data, flat_size),
+							   _abort_cb,
+							   AMexpect(AM_VAL_TYPE_CHANGE)),
+				   &change->change);
 
 	/* Create a context callback to free autochange when context is cleared */
 	ctxcb = MemoryContextAlloc(objcxt, sizeof(MemoryContextCallback));

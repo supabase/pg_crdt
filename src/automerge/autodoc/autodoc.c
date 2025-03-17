@@ -54,7 +54,7 @@ autodoc_get_flat_size(ExpandedObjectHeader *eohptr) {
 
     AMitemToBytes(AMstackItem(&doc->stack,
 							  AMsave(doc->doc),
-							  abort_cb,
+							  _abort_cb,
 							  AMexpect(AM_VAL_TYPE_BYTES)),
 				  &binary);
 
@@ -93,7 +93,7 @@ autodoc_flatten_into(ExpandedObjectHeader *eohptr,
 
     AMitemToActorId(AMstackItem(&doc->stack,
 								AMgetActorId(doc->doc),
-								abort_cb,
+								_abort_cb,
 								AMexpect(AM_VAL_TYPE_ACTOR_ID)),
 					&actor_id);
 
@@ -146,7 +146,7 @@ new_expanded_autodoc(autodoc_FlatAutodoc *flat, MemoryContext parentcontext) {
 	doc->stack = calloc(1, sizeof(AMstack));
     AMitemToDoc(AMstackItem(&doc->stack,
 							AMcreate(NULL),
-							abort_cb,
+							_abort_cb,
 							AMexpect(AM_VAL_TYPE_DOC)),
 				&doc->doc);
 	if (flat != NULL) {
@@ -156,20 +156,20 @@ new_expanded_autodoc(autodoc_FlatAutodoc *flat, MemoryContext parentcontext) {
 		AMitemToDoc(AMstackItem(
 						&doc->stack,
 						AMload(flat_data, flat_size),
-						abort_cb,
+						_abort_cb,
 						AMexpect(AM_VAL_TYPE_DOC)),
 					&doc->doc);
 
 		AMitemToActorId(AMstackItem(
 							&doc->stack,
 							AMactorIdFromBytes(flat->uuid, UUID_LEN),
-							abort_cb,
+							_abort_cb,
 							AMexpect(AM_VAL_TYPE_ACTOR_ID)),
 						&actor_id);
 
 		AMstackItem(&doc->stack,
 					AMsetActorId(doc->doc, actor_id),
-					abort_cb,
+					_abort_cb,
 					AMexpect(AM_VAL_TYPE_VOID));
 	}
 

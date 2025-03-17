@@ -12,18 +12,22 @@ Datum autodoc_in(PG_FUNCTION_ARGS) {
 	LOGF();
 
 	input = PG_GETARG_CSTRING(0);
-	d = DirectFunctionCall1(byteain, CStringGetDatum(input));
-	bin = DatumGetByteaP(d);
-	data = (uint8_t*)VARDATA(bin);
-	len = VARSIZE(bin) - VARHDRSZ;
+	if (strlen(input) && input[0] == '{') {
+		d = DirectFunctionCall1(jsonb_in, CStringGetDatum(input));
+		doc = _autodoc_from_jsonb(DatumGetJsonbP(d));
+	} else {
+		d = DirectFunctionCall1(byteain, CStringGetDatum(input));
+		bin = DatumGetByteaP(d);
+		data = (uint8_t*)VARDATA(bin);
+		len = VARSIZE(bin) - VARHDRSZ;
+		doc = new_expanded_autodoc(NULL, CurrentMemoryContext);
 
- 	doc = new_expanded_autodoc(NULL, CurrentMemoryContext);
-
-	AMitemToDoc(AMstackItem(&doc->stack,
-							AMload(data, len),
-							abort_cb,
-							AMexpect(AM_VAL_TYPE_DOC)),
-				&doc->doc);
+		AMitemToDoc(AMstackItem(&doc->stack,
+								AMload(data, len),
+								_abort_cb,
+								AMexpect(AM_VAL_TYPE_DOC)),
+					&doc->doc);
+	}
     AUTODOC_RETURN(doc);
 }
 

@@ -20,9 +20,13 @@ Datum autodoc_get_str(PG_FUNCTION_ARGS) {
 				 AM_ROOT,
 				 AMstr(text_to_cstring(key)),
 				 NULL),
-		abort_cb,
-		AMexpect(AM_VAL_TYPE_CHANGE_HASH));
+		_abort_cb,
+		NULL);
 	valtype = AMitemValType(item);
+
+	if (valtype == AM_VAL_TYPE_VOID)
+		ereport(ERROR, errmsg("Key %s does not exist.", text_to_cstring(key)));
+
 	if (valtype != AM_VAL_TYPE_STR)
 		ereport(ERROR, errmsg("Key %s is not an automerge string.", text_to_cstring(key)));
 

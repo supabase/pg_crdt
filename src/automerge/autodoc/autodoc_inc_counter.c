@@ -1,7 +1,7 @@
 #include "../automerge.h"
 
-PG_FUNCTION_INFO_V1(autodoc_set_int);
-Datum autodoc_set_int(PG_FUNCTION_ARGS) {
+PG_FUNCTION_INFO_V1(autodoc_inc_counter);
+Datum autodoc_inc_counter(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
 	text *key;
 	int64_t val;
@@ -14,11 +14,11 @@ Datum autodoc_set_int(PG_FUNCTION_ARGS) {
 
 	AMstackItem(
 		&doc->stack,
-		AMmapPutInt(doc->doc,
-					AM_ROOT,
-					AMstr(text_to_cstring(key)),
-					val),
-		abort_cb,
+		AMmapIncrement(doc->doc,
+					   AM_ROOT,
+					   AMstr(text_to_cstring(key)),
+					   val),
+		_abort_cb,
 		AMexpect(AM_VAL_TYPE_VOID));
 
 	AUTODOC_RETURN(doc);

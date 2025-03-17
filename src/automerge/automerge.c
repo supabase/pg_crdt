@@ -19,7 +19,7 @@ set search_path to public,automerge;
 
 PG_MODULE_MAGIC;
 
-bool abort_cb(AMstack** stack, void* data) {
+bool _abort_cb(AMstack** stack, void* data) {
     static char buffer[512] = {0};
 	AMstatus status;
     char const* suffix = NULL;
@@ -55,6 +55,17 @@ bool abort_cb(AMstack** stack, void* data) {
         c_msg = pnstrdup((const char *)bs.src, bs.count);
 		ereport(ERROR, (errmsg("%s; %s.\n", pstrdup(buffer), c_msg)));
         return false;
+    }
+    if (data) {
+        AMstackCallbackData* sc_data = (AMstackCallbackData*)data;
+        AMvalType const tag = AMitemValType(AMresultItem((*stack)->result));
+        if (tag != sc_data->bitmask) {
+			ereport(ERROR, (errmsg("Unexpected tag `%s` (%d) instead of `%s` at %s:%d.\n", AMvalTypeToString(tag), tag,
+								   AMvalTypeToString(sc_data->bitmask), sc_data->file, sc_data->line)));
+			free(data);
+			AMstackFree(stack);
+			return false;
+        }
     }
     return true;
 }

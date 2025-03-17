@@ -11,7 +11,7 @@ Datum autodoc_get_actor_id(PG_FUNCTION_ARGS) {
 	doc = AUTODOC_GETARG(0);
     AMitemToActorId(AMstackItem(&doc->stack,
 								AMgetActorId(doc->doc),
-								abort_cb,
+								_abort_cb,
 								AMexpect(AM_VAL_TYPE_ACTOR_ID)),
 					&actor_id);
 

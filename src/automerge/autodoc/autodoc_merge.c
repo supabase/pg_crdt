@@ -28,7 +28,7 @@ Datum autodoc_merge(PG_FUNCTION_ARGS) {
 	doc2 = AUTODOC_GETARG(1);
     AMstackItem(&doc1->stack,
 				AMmerge(doc1->doc, doc2->doc),
-				abort_cb,
+				_abort_cb,
 				AMexpect(AM_VAL_TYPE_CHANGE_HASH));
     AUTODOC_RETURN(doc1);
 }

@@ -1,7 +1,7 @@
 #include "../automerge.h"
 
-PG_FUNCTION_INFO_V1(autodoc_set_text);
-Datum autodoc_set_text(PG_FUNCTION_ARGS) {
+PG_FUNCTION_INFO_V1(autodoc_put_text);
+Datum autodoc_put_text(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
 	text *key;
 	text *val;
@@ -21,7 +21,7 @@ Datum autodoc_set_text(PG_FUNCTION_ARGS) {
 						   AM_ROOT,
 						   AMstr(text_to_cstring(key)),
 						   AM_OBJ_TYPE_TEXT),
-			abort_cb,
+			_abort_cb,
 			AMexpect(AM_VAL_TYPE_OBJ_TYPE)));
 
 	val_str = text_to_cstring(val);
@@ -31,7 +31,7 @@ Datum autodoc_set_text(PG_FUNCTION_ARGS) {
 								 text_id,
 								 0, 0,
 								 AMstr(val_str)),
-					abort_cb,
+					_abort_cb,
 					AMexpect(AM_VAL_TYPE_VOID));
 	}
 
