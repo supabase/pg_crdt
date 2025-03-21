@@ -15,7 +15,7 @@ Automerge centers around a document object called
 `automerge.autodoc`.  This type can be created by casting a jsonb
 object to `autodoc`:
 ``` postgres-console
-select pg_typeof('{"foo":1}'::jsonb::autodoc);
+select pg_typeof('{"foo":1}'::autodoc);
 ┌───────────┐
 │ pg_typeof │
 ├───────────┤
@@ -32,7 +32,7 @@ and creates the right autodoc value.
 
 You can cast back to `jsonb`:
 ``` postgres-console
-select '{"foo":1}'::jsonb::autodoc::jsonb;
+select '{"foo":1}'::autodoc::jsonb;
 ┌────────────┐
 │   jsonb    │
 ├────────────┤
@@ -42,14 +42,18 @@ select '{"foo":1}'::jsonb::autodoc::jsonb;
 
 ```
 Note that casting to jsonb is a potentially lossy operation, since
-autodoc support more types of values than jsonb does, such as
-timestamps and counters.  These types are ignored when casting to
-jsonb, so be aware of that.
+autodoc support more types of values than jsonb does, such as text
+objects, counters and timestamps.  Text objects are converted to
+json strings, Counters are converted to integers, and timestamps to
+UTC strings.  There is no JSON input representation for text,
+counters or timestamps, you must use `put_text`, `put_counter` or
+`put_timestamp` (see below) to set those types explicity on
+documents.
 ## Merging documents
 
 Documents can be merged together into one:
 ``` postgres-console
-select merge('{"foo":1}'::jsonb::autodoc, '{"bar":2}'::jsonb::autodoc)::jsonb;
+select merge('{"foo":1}'::autodoc, '{"bar":2}'::autodoc)::jsonb;
 ┌──────────────────────┐
 │        merge         │
 ├──────────────────────┤
@@ -61,8 +65,9 @@ select merge('{"foo":1}'::jsonb::autodoc, '{"bar":2}'::jsonb::autodoc)::jsonb;
 ## Getting scalar values
 
 Scalar values can be retrived from the document by their key:
+### Integers
 ``` postgres-console
-select get_int('{"foo":1}'::jsonb::autodoc, 'foo');
+select get_int('{"foo":1}'::autodoc, '.foo');
 ┌─────────┐
 │ get_int │
 ├─────────┤
@@ -70,7 +75,28 @@ select get_int('{"foo":1}'::jsonb::autodoc, 'foo');
 └─────────┘
 (1 row)
 
-select get_str('{"foo":"bar"}'::jsonb::autodoc, 'foo');
+select get_int('{"foo":{"bar":[1,2,3]}}', '.foo.bar[1]');
+┌─────────┐
+│ get_int │
+├─────────┤
+│       2 │
+└─────────┘
+(1 row)
+
+select put_int('{"foo":1}'::autodoc, 'bar', 2)::jsonb;
+┌──────────────────────┐
+│       put_int        │
+├──────────────────────┤
+│ {"bar": 2, "foo": 1} │
+└──────────────────────┘
+(1 row)
+
+select get_int('{"foo":1}'::autodoc, '.bar');
+ERROR:  Path not found.
+```
+### Strings
+``` postgres-console
+select get_str('{"foo":"bar"}'::autodoc, '.foo');
 ┌─────────┐
 │ get_str │
 ├─────────┤
@@ -78,15 +104,57 @@ select get_str('{"foo":"bar"}'::jsonb::autodoc, 'foo');
 └─────────┘
 (1 row)
 
-select get_double('{"foo":3.1451}'::jsonb::autodoc, 'foo');
+select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
+┌──────────┐
+│ get_str  │
+├──────────┤
+│ twothree │
+└──────────┘
+(1 row)
+
+select put_str('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
+┌────────────────────────────────┐
+│            put_str             │
+├────────────────────────────────┤
+│ {"foo": "bar", "bing": "bang"} │
+└────────────────────────────────┘
+(1 row)
+
+select get_str('{"foo":"bar"}'::autodoc, '.bar');
+ERROR:  Path not found.
+```
+### Doubles
+``` postgres-console
+select get_double('{"pi":3.14159}'::autodoc, '.pi');
 ┌────────────┐
 │ get_double │
 ├────────────┤
-│     3.1451 │
+│    3.14159 │
 └────────────┘
 (1 row)
 
-select get_bool('{"foo":true}'::jsonb::autodoc, 'foo');
+select get_double('{"foo":{"bar":[1.1,2.2,3.3]}}', '.foo.bar[1]');
+┌────────────┐
+│ get_double │
+├────────────┤
+│        2.2 │
+└────────────┘
+(1 row)
+
+select put_double('{"pi":3.14159}'::autodoc, 'e', 2.71828)::jsonb;
+┌───────────────────────────────┐
+│          put_double           │
+├───────────────────────────────┤
+│ {"e": 2.71828, "pi": 3.14159} │
+└───────────────────────────────┘
+(1 row)
+
+select get_double('{"pi":3.14159}'::autodoc, '.e');
+ERROR:  Path not found.
+```
+### Bools
+``` postgres-console
+select get_bool('{"foo":true}'::autodoc, '.foo');
 ┌──────────┐
 │ get_bool │
 ├──────────┤
@@ -94,26 +162,95 @@ select get_bool('{"foo":true}'::jsonb::autodoc, 'foo');
 └──────────┘
 (1 row)
 
+select get_bool('{"foo":{"bar":[true,false,true]}}', '.foo.bar[1]');
+┌──────────┐
+│ get_bool │
+├──────────┤
+│ f        │
+└──────────┘
+(1 row)
+
+select put_bool('{"foo":true}'::autodoc, 'bar', false)::jsonb;
+┌─────────────────────────────┐
+│          put_bool           │
+├─────────────────────────────┤
+│ {"bar": false, "foo": true} │
+└─────────────────────────────┘
+(1 row)
+
+select get_bool('{"foo":true}'::autodoc, '.bar');
+ERROR:  Path not found.
 ```
-## Getting mapping values
+### Counters
 
-Mapping values can be retrived from the document by their key,
-which is returned in a new document that contains only that
-mapping:
-
+NOTE: Counters have no jsonb input representation, on output they
+are represented as JSON integer.
 ``` postgres-console
---- select get_map('{"foo":{"bar":1}}'::jsonb::autodoc, 'foo');
+select put_counter('{}'::autodoc, 'bar', 1)::jsonb;
+┌─────────────┐
+│ put_counter │
+├─────────────┤
+│ {"bar": 1}  │
+└─────────────┘
+(1 row)
+
+select get_counter(put_counter('{}'::autodoc, '.bar', 1), '.bar');
+ERROR:  Path not found.
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar'), '.bar');
+┌─────────────┐
+│ get_counter │
+├─────────────┤
+│           2 │
+└─────────────┘
+(1 row)
+
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', 2), '.bar');
+┌─────────────┐
+│ get_counter │
+├─────────────┤
+│           3 │
+└─────────────┘
+(1 row)
+
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', -2), '.bar');
+┌─────────────┐
+│ get_counter │
+├─────────────┤
+│          -1 │
+└─────────────┘
+(1 row)
+
+select get_counter(put_counter('{}'::autodoc, 'bar', 1), '.foo');
+ERROR:  Path not found.
 ```
+### Text
 
-## Getting Changes
+Automerge Text objects are like strings but have support for
+changing ("splicing") text in and out efficiently.
 
-All changes can be retrieved with the `get_changes(autodoc)`
-function:
-
+NOTE: Text have no jsonb input representation, on output they are
+represented as JSON string.
 ``` postgres-console
---- select * from get_changes('{"foo":{"bar":1}}'::jsonb::autodoc);
-```
+select put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
+┌────────────────────────────────┐
+│            put_text            │
+├────────────────────────────────┤
+│ {"foo": "bar", "bing": "bang"} │
+└────────────────────────────────┘
+(1 row)
 
+select get_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), '.bing');
+ERROR:  Cannot traverse non-container type.
+
+select splice_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
+┌────────────────────────────────┐
+│          splice_text           │
+├────────────────────────────────┤
+│ {"foo": "bar", "bing": "bork"} │
+└────────────────────────────────┘
+(1 row)
+
+```
 ## Actor Ids
 
 Automerge supports a notion of "Actor Ids" that identify the actors
@@ -122,7 +259,10 @@ and set with `get_actor_id(autodoc)` and `set_actor_id(autodoc,
 uuid)`:
 
 ``` postgres-console
-select get_actor_id(set_actor_id('{"foo":1}'::jsonb::autodoc, '97131c66344c48e8b93249aabff6b2f2'));
+select get_actor_id(
+    set_actor_id('{"foo":1}'::autodoc,
+    '97131c66344c48e8b93249aabff6b2f2')
+    );
 ┌──────────────────────────────────┐
 │           get_actor_id           │
 ├──────────────────────────────────┤
@@ -130,4 +270,16 @@ select get_actor_id(set_actor_id('{"foo":1}'::jsonb::autodoc, '97131c66344c48e8b
 └──────────────────────────────────┘
 (1 row)
 
+```
+### Timestamp
+
+TODO
+
+## Getting Changes
+
+All changes can be retrieved with the `get_changes(autodoc)`
+function:
+
+``` postgres-console
+--- select * from get_changes('{"foo":{"bar":1}}'::autodoc);
 ```
