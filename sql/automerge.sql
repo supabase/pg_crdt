@@ -32,9 +32,13 @@ select pg_typeof('{"foo":1}'::autodoc);
 select '{"foo":1}'::autodoc::jsonb;
 
 -- Note that casting to jsonb is a potentially lossy operation, since
--- autodoc support more types of values than jsonb does, such as
--- timestamps and counters.  These types are ignored when casting to
--- jsonb, so be aware of that.
+-- autodoc support more types of values than jsonb does, such as text
+-- objects, counters and timestamps.  Text objects are converted to
+-- json strings, Counters are converted to integers, and timestamps to
+-- UTC strings.  There is no JSON input representation for text,
+-- counters or timestamps, you must use `put_text`, `put_counter` or
+-- `put_timestamp` (see below) to set those types explicity on
+-- documents.
 
 -- ## Merging documents
 --
@@ -48,35 +52,43 @@ select merge('{"foo":1}'::autodoc, '{"bar":2}'::autodoc)::jsonb;
 
 -- ### Integers
 
-select get_int('{"foo":1}'::autodoc, 'foo');
+select get_int('{"foo":1}'::autodoc, '.foo');
+
+select get_int('{"foo":{"bar":[1,2,3]}}', '.foo.bar[1]');
 
 select put_int('{"foo":1}'::autodoc, 'bar', 2)::jsonb;
 
-select get_int('{"foo":1}'::autodoc, 'bar');
+select get_int('{"foo":1}'::autodoc, '.bar');
 
 -- ### Strings
 
-select get_str('{"foo":"bar"}'::autodoc, 'foo');
+select get_str('{"foo":"bar"}'::autodoc, '.foo');
+
+select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
 
 select put_str('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
 
-select get_str('{"foo":"bar"}'::autodoc, 'bar');
+select get_str('{"foo":"bar"}'::autodoc, '.bar');
 
 -- ### Doubles
 
-select get_double('{"pi":3.14159}'::autodoc, 'pi');
+select get_double('{"pi":3.14159}'::autodoc, '.pi');
+
+select get_double('{"foo":{"bar":[1.1,2.2,3.3]}}', '.foo.bar[1]');
 
 select put_double('{"pi":3.14159}'::autodoc, 'e', 2.71828)::jsonb;
 
-select get_double('{"pi":3.14159}'::autodoc, 'e');
+select get_double('{"pi":3.14159}'::autodoc, '.e');
 
 -- ### Bools
 
-select get_bool('{"foo":true}'::autodoc, 'foo');
+select get_bool('{"foo":true}'::autodoc, '.foo');
+
+select get_bool('{"foo":{"bar":[true,false,true]}}', '.foo.bar[1]');
 
 select put_bool('{"foo":true}'::autodoc, 'bar', false)::jsonb;
 
-select get_bool('{"foo":true}'::autodoc, 'bar');
+select get_bool('{"foo":true}'::autodoc, '.bar');
 
 -- ### Counters
 --
@@ -85,15 +97,15 @@ select get_bool('{"foo":true}'::autodoc, 'bar');
 
 select put_counter('{}'::autodoc, 'bar', 1)::jsonb;
 
-select get_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar');
+select get_counter(put_counter('{}'::autodoc, '.bar', 1), '.bar');
 
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar'), 'bar');
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar'), '.bar');
 
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', 2), 'bar');
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', 2), '.bar');
 
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', -2), 'bar');
+select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', -2), '.bar');
 
-select get_counter(put_counter('{}'::autodoc, 'bar', 1), 'foo');
+select get_counter(put_counter('{}'::autodoc, 'bar', 1), '.foo');
 
 -- ### Text
 --
@@ -105,7 +117,7 @@ select get_counter(put_counter('{}'::autodoc, 'bar', 1), 'foo');
 
 select put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
 
-select get_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), 'bing');
+select get_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), '.bing');
 
 select splice_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
 

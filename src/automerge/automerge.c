@@ -20,7 +20,7 @@ set search_path to public,automerge;
 PG_MODULE_MAGIC;
 
 bool _abort_cb(AMstack** stack, void* data) {
-    static char buffer[512] = {0};
+    char *buffer = palloc0(512);
 	AMstatus status;
     char const* suffix = NULL;
     char* c_msg = NULL;
@@ -53,7 +53,7 @@ bool _abort_cb(AMstack** stack, void* data) {
         AMbyteSpan bs;
         bs = AMresultError((*stack)->result);
         c_msg = pnstrdup((const char *)bs.src, bs.count);
-		ereport(ERROR, (errmsg("%s; %s.\n", pstrdup(buffer), c_msg)));
+		ereport(ERROR, (errmsg("%s; %s.\n", buffer, c_msg)));
         return false;
     }
     if (data) {

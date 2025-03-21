@@ -16,14 +16,7 @@ Datum autodoc_get_text(PG_FUNCTION_ARGS) {
 	doc = AUTODOC_GETARG(0);
 	key = PG_GETARG_TEXT_PP(1);
 
-	item = AMstackItem(
-		&doc->stack,
-		AMmapGet(doc->doc,
-				 AM_ROOT,
-				 AMstr(text_to_cstring(key)),
-				 NULL),
-		_abort_cb,
-		NULL);
+	item = _autodoc_traverse(doc, AM_ROOT, text_to_cstring(key), AM_VAL_TYPE_OBJ_TYPE);
 	valtype = AMitemValType(item);
 
 	if (valtype == AM_VAL_TYPE_VOID)

@@ -30,6 +30,9 @@ void _PG_init(void);
 #define CCAT(x, y) CCAT2(x, y)
 #define FN(x) CCAT(x, SUFFIX)
 
+#define STRINGIFY2(x) #x
+#define STRINGIFY(x) STRINGIFY2(x)
+
 #define SUPPORT_FN(name, getter)\
 	PG_FUNCTION_INFO_V1(CCAT(name, _support));\
 	Datum CCAT(name, _support)(PG_FUNCTION_ARGS)\

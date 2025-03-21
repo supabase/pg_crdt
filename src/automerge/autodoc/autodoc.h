@@ -58,6 +58,8 @@ autodoc_Autodoc *DatumGetAutodoc(Datum d);
 
 autodoc_Autodoc *_autodoc_from_jsonb(Jsonb *);
 
+AMitem *_autodoc_traverse(autodoc_Autodoc*, const AMobjId*, const char *, AMvalType expected);
+
 #endif /* AUTODOC_H */
 
 /* Local Variables: */

@@ -186,7 +186,7 @@ static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, Jso
     items = AMstackItems(&doc->stack,
                          AMlistRange(doc->doc, objid, 0, SIZE_MAX, NULL),
                          _abort_cb,
-                         AMexpect(AM_VAL_TYPE_UINT));
+                         NULL);
 
     pushJsonbValue(&state, WJB_BEGIN_ARRAY, NULL);
 
@@ -195,7 +195,7 @@ static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, Jso
         item = AMstackItem(&doc->stack,
                            AMlistGet(doc->doc, objid, itempos, NULL),
                            _abort_cb,
-                           AMexpect(AM_VAL_TYPE_OBJ_TYPE));
+                           NULL);
 
         valtype = AMitemValType(item);
         switch (valtype) {

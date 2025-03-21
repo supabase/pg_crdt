@@ -1,39 +1,12 @@
 #include "../automerge.h"
 
-PG_FUNCTION_INFO_V1(autodoc_get_double);
-Datum autodoc_get_double(PG_FUNCTION_ARGS) {
-	autodoc_Autodoc *doc;
-	text *key;
-	double val;
-	AMitem *item;
-    AMvalType valtype;
+#define SUFFIX _double
+#define PG_TYPE double
+#define EXPECTED_VAL_TYPE AM_VAL_TYPE_F64
+#define EXPECTED_TO_VAL AMitemToF64
+#define PG_RETURN PG_RETURN_FLOAT8(val)
 
-	LOGF();
-
-	doc = AUTODOC_GETARG(0);
-	key = PG_GETARG_TEXT_PP(1);
-
-	item = AMstackItem(
-		&doc->stack,
-		AMmapGet(doc->doc,
-				 AM_ROOT,
-				 AMstr(text_to_cstring(key)),
-				 NULL),
-		_abort_cb,
-		NULL);
-	valtype = AMitemValType(item);
-
-	if (valtype == AM_VAL_TYPE_VOID)
-		ereport(ERROR, errmsg("Key %s does not exist.", text_to_cstring(key)));
-
-	if (valtype != AM_VAL_TYPE_F64)
-		ereport(ERROR, errmsg("Key %s is not an automerge f64.", text_to_cstring(key)));
-
-	if (!AMitemToF64(item, &val)) {
-		ereport(ERROR,(errmsg("AMitemToInt failed")));
-	}
-	PG_RETURN_FLOAT8(val);
-}
+#include "autodoc_get_template.h"
 
 /* Local Variables: */
 /* mode: c */
