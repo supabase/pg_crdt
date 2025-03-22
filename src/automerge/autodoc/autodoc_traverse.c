@@ -48,10 +48,10 @@ AMitem *_autodoc_traverse(autodoc_Autodoc *doc, const AMobjId *container, const 
 			valtype = AMitemValType(item);
 			if (valtype == AM_VAL_TYPE_OBJ_TYPE) {
 				return _autodoc_traverse(doc, AMitemObjId(item), p, expected);
-			} else if (valtype == expected) {
-				return item;
+			} else if (valtype != expected) {
+				ereport(ERROR, errmsg("Wrong type found at path."));
 			} else {
-				ereport(ERROR, errmsg("Path not found."));
+				return item;
 			}
         }
         else if (*p == '[') {  // Start of an array index
@@ -79,10 +79,10 @@ AMitem *_autodoc_traverse(autodoc_Autodoc *doc, const AMobjId *container, const 
 			valtype = AMitemValType(item);
 			if (valtype == AM_VAL_TYPE_OBJ_TYPE) {
 				return _autodoc_traverse(doc, AMitemObjId(item), p, expected);
-			} else if (valtype == expected) {
-				return item;
+			} else if (valtype != expected) {
+				ereport(ERROR, errmsg("Wrong type found at path"));
 			} else {
-				ereport(ERROR, errmsg("Path not found."));
+				return item;
 			}
         }
         else {
