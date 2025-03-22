@@ -65,7 +65,7 @@ autochange_flatten_into(ExpandedObjectHeader *eohptr,
 	   expanded value into it */
 
 	data = AUTOCHANGE_DATA(flat);
-	memcpy(data, change->flat_data, change->flat_size - AUTODOC_OVERHEAD());
+	memcpy(data, change->flat_data, change->flat_size - AUTOCHANGE_OVERHEAD());
 
 	/* Set the size of the varlena object */
 	SET_VARSIZE(flat, allocated_size);
