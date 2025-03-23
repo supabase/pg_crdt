@@ -67,7 +67,7 @@ AS '$libdir/automerge', 'autochange_get_change_hash'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_changes(autodoc)
-RETURNS TABLE (hash bytea, change autochange)
+RETURNS SETOF autochange
 AS '$libdir/automerge', 'autodoc_get_changes'
 LANGUAGE C STRICT;
 
@@ -141,27 +141,27 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_splice_text'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION autodoc_from_jsonb(jsonb, message text)
+CREATE FUNCTION from_jsonb(jsonb, commit_message text)
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_from_jsonb'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION autodoc_from_jsonb(jsonb)
+CREATE FUNCTION from_jsonb(jsonb)
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_from_jsonb'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION autodoc_to_jsonb(autodoc)
+CREATE FUNCTION to_jsonb(autodoc)
 RETURNS jsonb
 AS '$libdir/automerge', 'autodoc_to_jsonb'
 LANGUAGE C STRICT;
 
 CREATE CAST (autodoc AS jsonb)
-WITH FUNCTION autodoc_to_jsonb(autodoc)
+WITH FUNCTION to_jsonb(autodoc)
 AS IMPLICIT;
 
 CREATE CAST (jsonb AS autodoc)
-WITH FUNCTION autodoc_from_jsonb(jsonb)
+WITH FUNCTION from_jsonb(jsonb)
 AS IMPLICIT;
 
 CREATE FUNCTION autodoc_path_query(doc autodoc, path jsonpath, vars jsonb default '{}', silent bool default false)

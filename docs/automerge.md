@@ -53,7 +53,7 @@ documents.
 
 Documents can be merged together into one:
 ``` postgres-console
-select merge('{"foo":1}'::autodoc, '{"bar":2}'::autodoc)::jsonb;
+select merge('{"foo":1}', '{"bar":2}')::jsonb;
 ┌──────────────────────┐
 │        merge         │
 ├──────────────────────┤
@@ -67,7 +67,7 @@ select merge('{"foo":1}'::autodoc, '{"bar":2}'::autodoc)::jsonb;
 Scalar values can be retrived from the document by their key:
 ### Integers
 ``` postgres-console
-select get_int('{"foo":1}'::autodoc, '.foo');
+select get_int('{"foo":1}', '.foo');
 ┌─────────┐
 │ get_int │
 ├─────────┤
@@ -83,7 +83,7 @@ select get_int('{"foo":{"bar":[1,2,3]}}', '.foo.bar[1]');
 └─────────┘
 (1 row)
 
-select put_int('{"foo":1}'::autodoc, 'bar', 2)::jsonb;
+select put_int('{"foo":1}', 'bar', 2)::jsonb;
 ┌──────────────────────┐
 │       put_int        │
 ├──────────────────────┤
@@ -91,12 +91,12 @@ select put_int('{"foo":1}'::autodoc, 'bar', 2)::jsonb;
 └──────────────────────┘
 (1 row)
 
-select get_int('{"foo":1}'::autodoc, '.bar');
+select get_int('{"foo":1}', '.bar');
 ERROR:  Path not found.
 ```
 ### Strings
 ``` postgres-console
-select get_str('{"foo":"bar"}'::autodoc, '.foo');
+select get_str('{"foo":"bar"}', '.foo');
 ┌─────────┐
 │ get_str │
 ├─────────┤
@@ -112,7 +112,7 @@ select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
 └──────────┘
 (1 row)
 
-select put_str('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
+select put_str('{"foo":"bar"}', 'bing', 'bang')::jsonb;
 ┌────────────────────────────────┐
 │            put_str             │
 ├────────────────────────────────┤
@@ -120,12 +120,12 @@ select put_str('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
 └────────────────────────────────┘
 (1 row)
 
-select get_str('{"foo":"bar"}'::autodoc, '.bar');
+select get_str('{"foo":"bar"}', '.bar');
 ERROR:  Path not found.
 ```
 ### Doubles
 ``` postgres-console
-select get_double('{"pi":3.14159}'::autodoc, '.pi');
+select get_double('{"pi":3.14159}', '.pi');
 ┌────────────┐
 │ get_double │
 ├────────────┤
@@ -141,7 +141,7 @@ select get_double('{"foo":{"bar":[1.1,2.2,3.3]}}', '.foo.bar[1]');
 └────────────┘
 (1 row)
 
-select put_double('{"pi":3.14159}'::autodoc, 'e', 2.71828)::jsonb;
+select put_double('{"pi":3.14159}', 'e', 2.71828)::jsonb;
 ┌───────────────────────────────┐
 │          put_double           │
 ├───────────────────────────────┤
@@ -149,12 +149,12 @@ select put_double('{"pi":3.14159}'::autodoc, 'e', 2.71828)::jsonb;
 └───────────────────────────────┘
 (1 row)
 
-select get_double('{"pi":3.14159}'::autodoc, '.e');
+select get_double('{"pi":3.14159}', '.e');
 ERROR:  Path not found.
 ```
 ### Bools
 ``` postgres-console
-select get_bool('{"foo":true}'::autodoc, '.foo');
+select get_bool('{"foo":true}', '.foo');
 ┌──────────┐
 │ get_bool │
 ├──────────┤
@@ -170,7 +170,7 @@ select get_bool('{"foo":{"bar":[true,false,true]}}', '.foo.bar[1]');
 └──────────┘
 (1 row)
 
-select put_bool('{"foo":true}'::autodoc, 'bar', false)::jsonb;
+select put_bool('{"foo":true}', 'bar', false)::jsonb;
 ┌─────────────────────────────┐
 │          put_bool           │
 ├─────────────────────────────┤
@@ -178,7 +178,7 @@ select put_bool('{"foo":true}'::autodoc, 'bar', false)::jsonb;
 └─────────────────────────────┘
 (1 row)
 
-select get_bool('{"foo":true}'::autodoc, '.bar');
+select get_bool('{"foo":true}', '.bar');
 ERROR:  Path not found.
 ```
 ### Counters
@@ -186,7 +186,7 @@ ERROR:  Path not found.
 NOTE: Counters have no jsonb input representation, on output they
 are represented as JSON integer.
 ``` postgres-console
-select put_counter('{}'::autodoc, 'bar', 1)::jsonb;
+select put_counter('{}', 'bar', 1)::jsonb;
 ┌─────────────┐
 │ put_counter │
 ├─────────────┤
@@ -194,9 +194,9 @@ select put_counter('{}'::autodoc, 'bar', 1)::jsonb;
 └─────────────┘
 (1 row)
 
-select get_counter(put_counter('{}'::autodoc, '.bar', 1), '.bar');
+select get_counter(put_counter('{}', '.bar', 1), '.bar');
 ERROR:  Path not found.
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar'), '.bar');
+select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar'), '.bar');
 ┌─────────────┐
 │ get_counter │
 ├─────────────┤
@@ -204,7 +204,7 @@ select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar'), '.b
 └─────────────┘
 (1 row)
 
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', 2), '.bar');
+select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar', 2), '.bar');
 ┌─────────────┐
 │ get_counter │
 ├─────────────┤
@@ -212,7 +212,7 @@ select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', 2), 
 └─────────────┘
 (1 row)
 
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', -2), '.bar');
+select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar', -2), '.bar');
 ┌─────────────┐
 │ get_counter │
 ├─────────────┤
@@ -220,7 +220,7 @@ select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', -2),
 └─────────────┘
 (1 row)
 
-select get_counter(put_counter('{}'::autodoc, 'bar', 1), '.foo');
+select get_counter(put_counter('{}', 'bar', 1), '.foo');
 ERROR:  Path not found.
 ```
 ### Text
@@ -231,7 +231,7 @@ changing ("splicing") text in and out efficiently.
 NOTE: Text have no jsonb input representation, on output they are
 represented as JSON string.
 ``` postgres-console
-select put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
+select put_text('{"foo":"bar"}', 'bing', 'bang')::jsonb;
 ┌────────────────────────────────┐
 │            put_text            │
 ├────────────────────────────────┤
@@ -239,10 +239,10 @@ select put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
 └────────────────────────────────┘
 (1 row)
 
-select get_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), '.bing');
+select get_text(put_text('{"foo":"bar"}', 'bing', 'bang'), '.bing');
 ERROR:  Cannot traverse non-container type.
 
-select splice_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
+select splice_text(put_text('{"foo":"bar"}', 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
 ┌────────────────────────────────┐
 │          splice_text           │
 ├────────────────────────────────┤
@@ -260,7 +260,7 @@ uuid)`:
 
 ``` postgres-console
 select get_actor_id(
-    set_actor_id('{"foo":1}'::autodoc,
+    set_actor_id('{"foo":1}',
     '97131c66344c48e8b93249aabff6b2f2')
     );
 ┌──────────────────────────────────┐
@@ -281,5 +281,45 @@ All changes can be retrieved with the `get_changes(autodoc)`
 function:
 
 ``` postgres-console
---- select * from get_changes('{"foo":{"bar":1}}'::autodoc);
+select * from get_changes('{"foo":{"bar":1}}');
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                         get_changes                                                                          │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ \x856f4a8381de5c5f01430010a43405ab5ddc4023b0822579ef0d1d870101000000080104020415093401420356035701700200017f0000017f017e03666f6f03626172027e00017e0014010200 │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+(1 row)
+
+```
+Get a change hash
+``` postgres-console
+select change_hash(c) from get_changes('{"foo":{"bar":1}}') c;
+┌────────────────────────────────────────────────────────────────────┐
+│                            change_hash                             │
+├────────────────────────────────────────────────────────────────────┤
+│ \x77ac6e50488630cd1a9591efd43c6441189cd33af88a242f10319771cddd8d8d │
+└────────────────────────────────────────────────────────────────────┘
+(1 row)
+
+```
+Get a change message
+``` postgres-console
+select change_message(c) from get_changes('{"foo":{"bar":1}}') c;
+┌────────────────┐
+│ change_message │
+├────────────────┤
+│                │
+└────────────────┘
+(1 row)
+
+```
+Get a change message
+``` postgres-console
+select change_message(c) from get_changes(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar')) c;
+┌──────────────────┐
+│  change_message  │
+├──────────────────┤
+│ making a foo bar │
+└──────────────────┘
+(1 row)
+
 ```

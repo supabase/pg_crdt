@@ -60,6 +60,16 @@ autodoc_Autodoc *_autodoc_from_jsonb(Jsonb *);
 
 AMitem *_autodoc_traverse(autodoc_Autodoc*, const AMobjId*, const char *, AMvalType expected);
 
+typedef enum { TOKEN_KEY, TOKEN_INDEX } PathTokenType;
+
+typedef struct {
+    PathTokenType type;
+    union {
+        char *key;
+        int index;
+    } value;
+} PathToken;
+
 #endif /* AUTODOC_H */
 
 /* Local Variables: */

@@ -1,26 +1,16 @@
 #include "../automerge.h"
 
-typedef enum { TOKEN_KEY, TOKEN_INDEX } TokenType;
-
-typedef struct {
-    TokenType type;
-    union {
-        char *key;
-        int index;
-    } value;
-} Token;
-
 AMitem *_autodoc_traverse(autodoc_Autodoc *doc, const AMobjId *container, const char *expr, AMvalType expected)
 {
     AMitem* item;
     AMobjType itemtype;
     AMvalType valtype;
 
-    const char *p = expr;
 	char *endptr;
-    Token token;
+    PathToken token;
     char buffer[256];
     int buf_idx = 0;
+    const char *p = expr;
 
 	itemtype = AMobjObjType(doc->doc, container);
 	if (itemtype != AM_OBJ_TYPE_MAP && itemtype != AM_OBJ_TYPE_LIST) {
@@ -32,7 +22,11 @@ AMitem *_autodoc_traverse(autodoc_Autodoc *doc, const AMobjId *container, const 
             p++; // Skip '.'
             buf_idx = 0;
             while (*p && *p != '.' && *p != '[') {
-                buffer[buf_idx++] = *p++;
+				if (buf_idx < sizeof(buffer) - 1) {
+					buffer[buf_idx++] = *p++;
+				} else {
+					ereport(ERROR, errmsg("Token %s cannot be longer than %lu", buffer, sizeof(buffer)));
+				}
             }
             buffer[buf_idx] = '\0';
             token.type = TOKEN_KEY;
@@ -58,7 +52,11 @@ AMitem *_autodoc_traverse(autodoc_Autodoc *doc, const AMobjId *container, const 
             p++; // Skip '['
             buf_idx = 0;
             while (*p && *p != ']') {
-                buffer[buf_idx++] = *p++;
+				if (buf_idx < sizeof(buffer) - 1) {
+					buffer[buf_idx++] = *p++;
+				} else {
+					ereport(ERROR, errmsg("Token %s cannot be longer than %lu", buffer, sizeof(buffer)));
+				}
             }
             buffer[buf_idx] = '\0';
             if (*p == ']') p++; // Skip ']'

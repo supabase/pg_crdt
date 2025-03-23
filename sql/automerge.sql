@@ -44,7 +44,7 @@ select '{"foo":1}'::autodoc::jsonb;
 --
 -- Documents can be merged together into one:
 
-select merge('{"foo":1}'::autodoc, '{"bar":2}'::autodoc)::jsonb;
+select merge('{"foo":1}', '{"bar":2}')::jsonb;
 
 -- ## Getting scalar values
 --
@@ -52,60 +52,60 @@ select merge('{"foo":1}'::autodoc, '{"bar":2}'::autodoc)::jsonb;
 
 -- ### Integers
 
-select get_int('{"foo":1}'::autodoc, '.foo');
+select get_int('{"foo":1}', '.foo');
 
 select get_int('{"foo":{"bar":[1,2,3]}}', '.foo.bar[1]');
 
-select put_int('{"foo":1}'::autodoc, 'bar', 2)::jsonb;
+select put_int('{"foo":1}', 'bar', 2)::jsonb;
 
-select get_int('{"foo":1}'::autodoc, '.bar');
+select get_int('{"foo":1}', '.bar');
 
 -- ### Strings
 
-select get_str('{"foo":"bar"}'::autodoc, '.foo');
+select get_str('{"foo":"bar"}', '.foo');
 
 select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
 
-select put_str('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
+select put_str('{"foo":"bar"}', 'bing', 'bang')::jsonb;
 
-select get_str('{"foo":"bar"}'::autodoc, '.bar');
+select get_str('{"foo":"bar"}', '.bar');
 
 -- ### Doubles
 
-select get_double('{"pi":3.14159}'::autodoc, '.pi');
+select get_double('{"pi":3.14159}', '.pi');
 
 select get_double('{"foo":{"bar":[1.1,2.2,3.3]}}', '.foo.bar[1]');
 
-select put_double('{"pi":3.14159}'::autodoc, 'e', 2.71828)::jsonb;
+select put_double('{"pi":3.14159}', 'e', 2.71828)::jsonb;
 
-select get_double('{"pi":3.14159}'::autodoc, '.e');
+select get_double('{"pi":3.14159}', '.e');
 
 -- ### Bools
 
-select get_bool('{"foo":true}'::autodoc, '.foo');
+select get_bool('{"foo":true}', '.foo');
 
 select get_bool('{"foo":{"bar":[true,false,true]}}', '.foo.bar[1]');
 
-select put_bool('{"foo":true}'::autodoc, 'bar', false)::jsonb;
+select put_bool('{"foo":true}', 'bar', false)::jsonb;
 
-select get_bool('{"foo":true}'::autodoc, '.bar');
+select get_bool('{"foo":true}', '.bar');
 
 -- ### Counters
 --
 -- NOTE: Counters have no jsonb input representation, on output they
 -- are represented as JSON integer.
 
-select put_counter('{}'::autodoc, 'bar', 1)::jsonb;
+select put_counter('{}', 'bar', 1)::jsonb;
 
-select get_counter(put_counter('{}'::autodoc, '.bar', 1), '.bar');
+select get_counter(put_counter('{}', '.bar', 1), '.bar');
 
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar'), '.bar');
+select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar'), '.bar');
 
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', 2), '.bar');
+select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar', 2), '.bar');
 
-select get_counter(inc_counter(put_counter('{}'::autodoc, 'bar', 1), 'bar', -2), '.bar');
+select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar', -2), '.bar');
 
-select get_counter(put_counter('{}'::autodoc, 'bar', 1), '.foo');
+select get_counter(put_counter('{}', 'bar', 1), '.foo');
 
 -- ### Text
 --
@@ -115,11 +115,11 @@ select get_counter(put_counter('{}'::autodoc, 'bar', 1), '.foo');
 -- NOTE: Text have no jsonb input representation, on output they are
 -- represented as JSON string.
 
-select put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang')::jsonb;
+select put_text('{"foo":"bar"}', 'bing', 'bang')::jsonb;
 
-select get_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), '.bing');
+select get_text(put_text('{"foo":"bar"}', 'bing', 'bang'), '.bing');
 
-select splice_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
+select splice_text(put_text('{"foo":"bar"}', 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
 
 -- ## Actor Ids
 --
@@ -130,7 +130,7 @@ select splice_text(put_text('{"foo":"bar"}'::autodoc, 'bing', 'bang'), 'bing', 1
 --
 
 select get_actor_id(
-    set_actor_id('{"foo":1}'::autodoc,
+    set_actor_id('{"foo":1}',
     '97131c66344c48e8b93249aabff6b2f2')
     );
 
@@ -143,5 +143,16 @@ select get_actor_id(
 -- All changes can be retrieved with the `get_changes(autodoc)`
 -- function:
 --
---- select * from get_changes('{"foo":{"bar":1}}'::autodoc);
---
+select * from get_changes('{"foo":{"bar":1}}');
+
+-- Get a change hash
+
+select change_hash(c) from get_changes('{"foo":{"bar":1}}') c;
+
+-- Get a change message
+
+select change_message(c) from get_changes('{"foo":{"bar":1}}') c;
+
+-- Get a change message
+
+select change_message(c) from get_changes(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar')) c;

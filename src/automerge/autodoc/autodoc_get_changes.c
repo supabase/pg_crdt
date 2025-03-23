@@ -5,18 +5,12 @@ Datum autodoc_get_changes(PG_FUNCTION_ARGS)
 {
     autodoc_Autodoc *doc;
     autochange_Autochange *change;
-    bytea *chash;
     autodoc_ChangesState *state;
     AMitem* item = NULL;
     AMitems changes;
     AMchange* itemchange;
     AMbyteSpan bs;
     FuncCallContext *funcctx;
-	TupleDesc tupdesc;
-	Datum result;
-	Datum values[2];
-	bool nulls[2] = {false, false};
-	HeapTuple tuple;
 
     LOGF();
 
@@ -42,15 +36,6 @@ Datum autodoc_get_changes(PG_FUNCTION_ARGS)
         }
 
         funcctx->user_fctx = state;
-
-		if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
-			ereport(ERROR,
-					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-					 errmsg("function returning record called in context "
-							"that cannot accept type record")));
-
-		BlessTupleDesc(tupdesc);
-		funcctx->tuple_desc = tupdesc;
         MemoryContextSwitchTo(oldctx);
     }
     funcctx = SRF_PERCALL_SETUP();
@@ -62,17 +47,6 @@ Datum autodoc_get_changes(PG_FUNCTION_ARGS)
 	}
 	else {
         change = state->changes[funcctx->call_cntr];
-
-        bs = AMchangeHash(change->change);
-        chash = (bytea *) palloc(VARHDRSZ + bs.count);
-        SET_VARSIZE(chash, VARHDRSZ + bs.count);
-        memcpy(VARDATA(chash), bs.src, bs.count);
-
-        values[0] = PointerGetDatum(chash);
-        values[1] = EOHPGetRWDatum(&change->hdr);
-
-		tuple = heap_form_tuple(funcctx->tuple_desc, values, nulls);
-		result = HeapTupleGetDatum(tuple);
-        SRF_RETURN_NEXT(funcctx, result);
+        SRF_RETURN_NEXT(funcctx, EOHPGetRWDatum(&change->hdr));
     }
 }
