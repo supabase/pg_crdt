@@ -182,6 +182,7 @@ static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, Jso
     char* str;
     int64_t intv;
     double floatv;
+	bool boolv;
 
     items = AMstackItems(&doc->stack,
                          AMlistRange(doc->doc, objid, 0, SIZE_MAX, NULL),
@@ -248,6 +249,16 @@ static JsonbValue *_am_walk_list(autodoc_Autodoc *doc, AMobjId const *objid, Jso
 					pushJsonbValue(&state, WJB_ELEM, &val);
 				} else {
 					ereport(ERROR, (errmsg("AMitemToF64 failed")));
+				}
+				break;
+
+			case AM_VAL_TYPE_BOOL:
+				if (AMitemToBool(item, &boolv)) {
+					val.type = jbvBool;
+					val.val.boolean = boolv;
+					pushJsonbValue(&state, WJB_ELEM, &val);
+				} else {
+					ereport(ERROR, (errmsg("AMitemToBool failed")));
 				}
 				break;
 

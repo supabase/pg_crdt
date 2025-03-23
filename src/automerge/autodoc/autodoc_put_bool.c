@@ -1,28 +1,12 @@
 #include "../automerge.h"
 
-PG_FUNCTION_INFO_V1(autodoc_put_bool);
-Datum autodoc_put_bool(PG_FUNCTION_ARGS) {
-	autodoc_Autodoc *doc;
-	text *key;
-	bool val;
+#define _SUFFIX _bool
+#define _PG_TYPE bool
+#define _PG_GETARG PG_GETARG_BOOL
+#define _AM_PUT_MAP AMmapPutBool
+#define _AM_PUT_LIST AMlistPutBool
 
-	LOGF();
-
-	doc = AUTODOC_GETARG(0);
-	key = PG_GETARG_TEXT_PP(1);
-	val = PG_GETARG_BOOL(2);
-
-	AMstackItem(
-		&doc->stack,
-		AMmapPutBool(doc->doc,
-					 AM_ROOT,
-					 AMstr(text_to_cstring(key)),
-					 val),
-		_abort_cb,
-		AMexpect(AM_VAL_TYPE_VOID));
-
-	AUTODOC_RETURN(doc);
-}
+#include "autodoc_put_template.h"
 
 /* Local Variables: */
 /* mode: c */

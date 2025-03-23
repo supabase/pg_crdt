@@ -56,7 +56,7 @@ select get_int('{"foo":1}', '.foo');
 
 select get_int('{"foo":{"bar":[1,2,3]}}', '.foo.bar[1]');
 
-select put_int('{"foo":1}', 'bar', 2)::jsonb;
+select put_int('{"foo":1}', '.bar', 2)::jsonb;
 
 select get_int('{"foo":1}', '.bar');
 
@@ -76,7 +76,7 @@ select get_double('{"pi":3.14159}', '.pi');
 
 select get_double('{"foo":{"bar":[1.1,2.2,3.3]}}', '.foo.bar[1]');
 
-select put_double('{"pi":3.14159}', 'e', 2.71828)::jsonb;
+select put_double('{"pi":3.14159}', '.e', 2.71828)::jsonb;
 
 select get_double('{"pi":3.14159}', '.e');
 
@@ -86,7 +86,9 @@ select get_bool('{"foo":true}', '.foo');
 
 select get_bool('{"foo":{"bar":[true,false,true]}}', '.foo.bar[1]');
 
-select put_bool('{"foo":true}', 'bar', false)::jsonb;
+select put_bool('{"foo":true}', '.foo', false)::jsonb;
+
+select put_bool('{"foo":{"bar":[false,false,false]}}', '.foo.bar[1]', true)::jsonb;
 
 select get_bool('{"foo":true}', '.bar');
 
@@ -95,17 +97,17 @@ select get_bool('{"foo":true}', '.bar');
 -- NOTE: Counters have no jsonb input representation, on output they
 -- are represented as JSON integer.
 
-select put_counter('{}', 'bar', 1)::jsonb;
+select put_counter('{}', '.bar', 1)::jsonb;
 
 select get_counter(put_counter('{}', '.bar', 1), '.bar');
 
-select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar'), '.bar');
+select get_counter(inc_counter(put_counter('{}', '.bar', 1), '.bar'), '.bar');
 
-select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar', 2), '.bar');
+select get_counter(inc_counter(put_counter('{}', '.bar', 1), 'bar', 2), '.bar');
 
-select get_counter(inc_counter(put_counter('{}', 'bar', 1), 'bar', -2), '.bar');
+select get_counter(inc_counter(put_counter('{}', '.bar', 1), 'bar', -2), '.bar');
 
-select get_counter(put_counter('{}', 'bar', 1), '.foo');
+select get_counter(put_counter('{}', '.bar', 1), '.foo');
 
 -- ### Text
 --

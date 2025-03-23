@@ -1,10 +1,10 @@
 #include "../automerge.h"
 
-#define SUFFIX _counter
-#define PG_TYPE int64_t
-#define EXPECTED_VAL_TYPE AM_VAL_TYPE_COUNTER
-#define EXPECTED_TO_VAL AMitemToCounter
-#define PG_RETURN PG_RETURN_INT64(val)
+#define _SUFFIX _counter
+#define _PG_TYPE int64_t
+#define _AM_EXPECTED_VAL_TYPE AM_VAL_TYPE_COUNTER
+#define _AM_EXPECTED_TO_VAL AMitemToCounter
+#define _PG_RETURN PG_RETURN_INT64(val)
 
 #include "autodoc_get_template.h"
 

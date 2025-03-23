@@ -260,8 +260,11 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 					}
 					case jbvBool:
 						AMstackItem(NULL,
-									AMlistPutBool(doc->doc, objid,
-												  SIZE_MAX, true, v.val.boolean),
+									AMlistPutBool(doc->doc,
+												  objid,
+												  SIZE_MAX,
+												  true,
+												  v.val.boolean),
 									_abort_cb,
 									AMexpect(AM_VAL_TYPE_VOID));
 						break;

@@ -28,7 +28,7 @@ void _PG_init(void);
 
 #define CCAT2(x, y) x ## y
 #define CCAT(x, y) CCAT2(x, y)
-#define FN(x) CCAT(x, SUFFIX)
+#define FN(x) CCAT(x, _SUFFIX)
 
 #define STRINGIFY2(x) #x
 #define STRINGIFY(x) STRINGIFY2(x)

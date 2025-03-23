@@ -1,49 +1,36 @@
 
-AMitem *FN(_autodoc_traverse)(autodoc_Autodoc *doc, const AMobjId *container, const char *expr);
+autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc, const AMobjId *container, const char *expr, _PG_TYPE val);
 
-PG_FUNCTION_INFO_V1(FN(autodoc_get));
-Datum FN(autodoc_get)(PG_FUNCTION_ARGS)
+PG_FUNCTION_INFO_V1(FN(autodoc_put));
+Datum FN(autodoc_put)(PG_FUNCTION_ARGS)
 {
 	autodoc_Autodoc *doc;
 	text *path;
 	_PG_TYPE val;
-	AMitem *item;
-    AMvalType valtype;
 
 	LOGF();
-
 	doc = AUTODOC_GETARG(0);
 	path = PG_GETARG_TEXT_PP(1);
+	val = _PG_GETARG(2);
 
-	item = FN(_autodoc_traverse)(doc, AM_ROOT, text_to_cstring(path));
-	valtype = AMitemValType(item);
-
-	if (valtype == AM_VAL_TYPE_VOID)
-		ereport(ERROR, errmsg("Path %s does not exist.", text_to_cstring(path)));
-
-	if (valtype != _AM_EXPECTED_VAL_TYPE)
-		ereport(ERROR, errmsg("Path %s is not expected type.", text_to_cstring(path)));
-
-	if (!_AM_EXPECTED_TO_VAL(item, &val)) {
-		ereport(ERROR,(errmsg("%s failed", STRINGIFY(_AM_EXPECTED_TO_VAL))));
-	}
-	_PG_RETURN;
+	doc = FN(_autodoc_traverse_put)(doc, AM_ROOT, text_to_cstring(path), val);
+	AUTODOC_RETURN(doc);
 }
 
-AMitem *FN(_autodoc_traverse)(autodoc_Autodoc *doc, const AMobjId *container, const char *expr)
+autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc, const AMobjId *container,
+										   const char *expr, _PG_TYPE val)
 {
-    AMitem* item;
-    AMobjType itemtype;
-    AMvalType valtype;
-
+    AMobjType containertype;
+	AMitem *item;
+	AMvalType valtype;
 	char *endptr;
     PathToken token;
     char buffer[256];
     int buf_idx = 0;
     const char *p = pstrdup(expr);
 
-	itemtype = AMobjObjType(doc->doc, container);
-	if (itemtype != AM_OBJ_TYPE_MAP && itemtype != AM_OBJ_TYPE_LIST) {
+	containertype = AMobjObjType(doc->doc, container);
+	if (containertype != AM_OBJ_TYPE_MAP && containertype != AM_OBJ_TYPE_LIST) {
 		ereport(ERROR, errmsg("Cannot traverse non-container type.\n"));
 	}
 	if (container == AM_ROOT) {
@@ -53,6 +40,9 @@ AMitem *FN(_autodoc_traverse)(autodoc_Autodoc *doc, const AMobjId *container, co
 
     while (*p) {
         if (*p == '.') {  // Start of a map key
+			if (containertype != AM_OBJ_TYPE_MAP) {
+				ereport(ERROR, errmsg("Container for path %s must be map.\n", expr));
+			}
             p++; // Skip '.'
             buf_idx = 0;
             while (*p && *p != '.' && *p != '[') {
@@ -65,9 +55,6 @@ AMitem *FN(_autodoc_traverse)(autodoc_Autodoc *doc, const AMobjId *container, co
             buffer[buf_idx] = '\0';
             token.type = TOKEN_KEY;
             token.value.key = buffer;
-			if (itemtype != AM_OBJ_TYPE_MAP) {
-				ereport(ERROR, errmsg("Container for key token %s must be map.\n", expr));
-			}
 			item = AMstackItem(&doc->stack,
 							   AMmapGet(doc->doc, container, AMstr(token.value.key), NULL),
 							   _abort_cb,
@@ -75,19 +62,20 @@ AMitem *FN(_autodoc_traverse)(autodoc_Autodoc *doc, const AMobjId *container, co
 
 			valtype = AMitemValType(item);
 			if (valtype == AM_VAL_TYPE_OBJ_TYPE) {
-				return FN(_autodoc_traverse)(doc, AMitemObjId(item), p);
-			}
-			else if (valtype == AM_VAL_TYPE_VOID) {
-				ereport(ERROR, errmsg("Path %s not found.", expr));
-			}
-			else if (valtype!= _AM_EXPECTED_VAL_TYPE) {
-				ereport(ERROR, errmsg("Wrong type found at path %s.", expr));
+				return FN(_autodoc_traverse_put)(doc, AMitemObjId(item), p, val);
 			}
 			else {
-				return item;
+				AMstackItem(&doc->stack,
+							_AM_PUT_MAP(doc->doc, container, AMstr(token.value.key), val),
+							_abort_cb,
+							AMexpect(AM_VAL_TYPE_VOID));
+			return doc;
 			}
         }
         else if (*p == '[') {  // Start of an array index
+			if (containertype != AM_OBJ_TYPE_LIST) {
+				ereport(ERROR, errmsg("Container for path %s must be list.\n", expr));
+			}
             p++; // Skip '['
             buf_idx = 0;
             while (*p && *p != ']') {
@@ -104,27 +92,21 @@ AMitem *FN(_autodoc_traverse)(autodoc_Autodoc *doc, const AMobjId *container, co
             if (*buffer == '\0' || *endptr != '\0') {
                 ereport(ERROR, errmsg("Error: Invalid array index '%s'\n", buffer));
             }
-			if (itemtype != AM_OBJ_TYPE_LIST) {
-				ereport(ERROR, errmsg("Container for index path %s must be list.\n", expr));
-			}
 			item = AMstackItem(&doc->stack,
 							   AMlistGet(doc->doc, container, token.value.index, NULL),
 							   _abort_cb,
 							   NULL);
 
-			itemtype = AMobjObjType(doc->doc, AMitemObjId(item));
 			valtype = AMitemValType(item);
 			if (valtype == AM_VAL_TYPE_OBJ_TYPE) {
-				return FN(_autodoc_traverse)(doc, AMitemObjId(item), p);
-			}
-			else if (valtype == AM_VAL_TYPE_VOID) {
-				ereport(ERROR, errmsg("Path %s not found.", expr));
-			}
-			else if (valtype != _AM_EXPECTED_VAL_TYPE) {
-				ereport(ERROR, errmsg("Wrong type found at path %s", expr));
+				return FN(_autodoc_traverse_put)(doc, AMitemObjId(item), p, val);
 			}
 			else {
-				return item;
+				AMstackItem(&doc->stack,
+							_AM_PUT_LIST(doc->doc, container, token.value.index, false, val),
+							_abort_cb,
+							AMexpect(AM_VAL_TYPE_VOID));
+			return doc;
 			}
         }
         else {
@@ -136,9 +118,9 @@ AMitem *FN(_autodoc_traverse)(autodoc_Autodoc *doc, const AMobjId *container, co
 
 #undef _SUFFIX
 #undef _PG_TYPE
-#undef _AM_EXPECTED_VAL_TYPE
-#undef _AM_EXPECTED_TO_VAL
-#undef _PG_RETURN
+#undef _PG_GETARG
+#undef _AM_PUT_MAP
+#undef _AM_PUT_LIST
 
 /* Local Variables: */
 /* mode: c */
