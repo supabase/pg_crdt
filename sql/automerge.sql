@@ -145,7 +145,7 @@ select get_actor_id(
 -- All changes can be retrieved with the `get_changes(autodoc)`
 -- function:
 --
-select * from get_changes('{"foo":{"bar":1}}');
+select pg_typeof(c) from get_changes('{"foo":{"bar":1}}') c;
 
 -- Apply a change from one doc to another:
 
@@ -155,11 +155,7 @@ select apply('{"baz":true}', :'change')::jsonb;
 
 -- Get a change hash
 
-select change_hash(c) from get_changes('{"foo":{"bar":1}}') c;
-
--- Get a change message
-
-select change_message(c) from get_changes('{"foo":{"bar":1}}') c;
+select pg_typeof(change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
 
 -- Get a change message
 
