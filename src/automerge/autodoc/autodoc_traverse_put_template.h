@@ -1,8 +1,15 @@
 
-autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc, const AMobjId *container, const char *expr, _PG_TYPE val);
+autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc,
+                                           const AMobjId *container,
+                                           const char *expr,
+                                           _PG_TYPE val,
+                                           bool insert);
 
-autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc, const AMobjId *container,
-										   const char *expr, _PG_TYPE val)
+autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc,
+                                           const AMobjId *container,
+										   const char *expr,
+                                           _PG_TYPE val,
+                                           bool insert)
 {
     AMobjType containertype;
 	AMitem *item;
@@ -46,7 +53,7 @@ autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc, const AMobjId *
 
 			valtype = AMitemValType(item);
 			if (valtype == AM_VAL_TYPE_OBJ_TYPE) {
-				return FN(_autodoc_traverse_put)(doc, AMitemObjId(item), p, val);
+				return FN(_autodoc_traverse_put)(doc, AMitemObjId(item), p, val, insert);
 			}
 			else {
 				AMstackItem(&doc->stack,
@@ -83,12 +90,12 @@ autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc, const AMobjId *
 
 			valtype = AMitemValType(item);
 			if (valtype == AM_VAL_TYPE_OBJ_TYPE) {
-				return FN(_autodoc_traverse_put)(doc, AMitemObjId(item), p, val);
+				return FN(_autodoc_traverse_put)(doc, AMitemObjId(item), p, val, insert);
 			}
 			else {
 				#ifndef _EXPECT_COUNTER
 				AMstackItem(&doc->stack,
-							_AM_PUT_LIST(doc->doc, container, token.value.index, false, val),
+							_AM_PUT_LIST(doc->doc, container, token.value.index, insert, val),
 							_abort_cb,
 							AMexpect(AM_VAL_TYPE_VOID));
 				#else

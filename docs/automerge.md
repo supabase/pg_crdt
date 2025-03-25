@@ -12,8 +12,9 @@ set search_path to public,automerge;
 ## Casting to/from jsonb
 
 Automerge centers around a document object called
-`automerge.autodoc`.  This type can be created by casting a jsonb
-object to `autodoc`:
+`automerge.autodoc`.  An autodoc is a json object "like" container
+for (mostly) json like types. Documents can be created by casting
+an initializing jsonb object to `autodoc`:
 ``` postgres-console
 select pg_typeof('{"foo":1}'::autodoc);
 ┌───────────┐
@@ -30,7 +31,7 @@ all the Postgres jsonb types.  jsonb doesn't have a distinction
 between integers and floats, but autodoc automatically detects them
 and creates the right autodoc value.
 
-You can cast back to `jsonb`:
+You can cast back to `jsonb` as well:
 ``` postgres-console
 select '{"foo":1}'::autodoc::jsonb;
 ┌────────────┐
@@ -49,22 +50,14 @@ UTC strings.  There is no JSON input representation for text,
 counters or timestamps, you must use `put_text`, `put_counter` or
 `put_timestamp` (see below) to set those types explicity on
 documents.
-## Merging documents
 
-Documents can be merged together into one:
-``` postgres-console
-select merge('{"foo":1}', '{"bar":2}')::jsonb;
-┌──────────────────────┐
-│        merge         │
-├──────────────────────┤
-│ {"bar": 2, "foo": 1} │
-└──────────────────────┘
-(1 row)
-
-```
 ## Getting scalar values
 
-Scalar values can be retrived from the document by their key:
+Individual scalar values can be retrieved from an autodoc with
+`_get` functions and set with `_put` functions.  These functions
+take a path syntax that can traverse the document and its
+sub-objects/arrays.  An object is traversed with the `.` operator
+and array items are indexed with the `[]` operator:
 ### Integers
 ``` postgres-console
 select get_int('{"foo":1}', '.foo');
@@ -89,6 +82,22 @@ select put_int('{"foo":1}', '.bar', 2)::jsonb;
 ├──────────────────────┤
 │ {"bar": 2, "foo": 1} │
 └──────────────────────┘
+(1 row)
+
+select put_int('{"foo":{"bar":[1,2]}}', '.foo.bar[1]', 3, false)::jsonb;
+┌──────────────────────────┐
+│         put_int          │
+├──────────────────────────┤
+│ {"foo": {"bar": [1, 3]}} │
+└──────────────────────────┘
+(1 row)
+
+select put_int('{"foo":{"bar":[1,2]}}', '.foo.bar[1]', 3, true)::jsonb;
+┌─────────────────────────────┐
+│           put_int           │
+├─────────────────────────────┤
+│ {"foo": {"bar": [1, 3, 2]}} │
+└─────────────────────────────┘
 (1 row)
 
 select get_int('{"foo":1}', '.bar');
@@ -179,11 +188,11 @@ select put_bool('{"foo":true}', '.foo', false)::jsonb;
 (1 row)
 
 select put_bool('{"foo":{"bar":[false,false,false]}}', '.foo.bar[1]', true)::jsonb;
-┌────────────────────────────────────────┐
-│                put_bool                │
-├────────────────────────────────────────┤
-│ {"foo": {"bar": [false, true, false]}} │
-└────────────────────────────────────────┘
+┌───────────────────────────────────────────────┐
+│                   put_bool                    │
+├───────────────────────────────────────────────┤
+│ {"foo": {"bar": [false, true, false, false]}} │
+└───────────────────────────────────────────────┘
 (1 row)
 
 select get_bool('{"foo":true}', '.bar');
@@ -294,9 +303,23 @@ select get_actor_id(
 
 TODO
 
+## Merging documents
+
+Documents can be merged together.  The second argument document is
+merged into the first:
+``` postgres-console
+select merge('{"foo":1}', '{"bar":2}')::jsonb;
+┌──────────────────────┐
+│        merge         │
+├──────────────────────┤
+│ {"bar": 2, "foo": 1} │
+└──────────────────────┘
+(1 row)
+
+```
 ## Getting Changes
 
-All changes can be retrieved with the `get_changes(autodoc)`
+All changes can be retrieved with the `get_changes()`
 function:
 
 ``` postgres-console
@@ -333,12 +356,13 @@ select pg_typeof(change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
 ```
 Get a change message
 ``` postgres-console
-select change_message(c) from get_changes(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar')) c;
+select change_message(c) from get_changes(put_int(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar'), '.foo.baz', 2))  c;
 ┌──────────────────┐
 │  change_message  │
 ├──────────────────┤
 │ making a foo bar │
+│ put_int          │
 └──────────────────┘
-(1 row)
+(2 rows)
 
 ```

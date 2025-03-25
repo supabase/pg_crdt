@@ -81,7 +81,7 @@ RETURNS text
 AS '$libdir/automerge', 'autodoc_get_str'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION put_str(doc autodoc, key text, val text)
+CREATE FUNCTION put_str(doc autodoc, key text, val text, insert bool default true, message text default 'put_str')
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_put_str'
 LANGUAGE C STRICT;
@@ -91,7 +91,7 @@ RETURNS bigint
 AS '$libdir/automerge', 'autodoc_get_int'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION put_int(doc autodoc, key text, val bigint)
+CREATE FUNCTION put_int(doc autodoc, key text, val bigint, insert bool default true, message text default 'put_int')
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_put_int'
 LANGUAGE C STRICT;
@@ -101,7 +101,7 @@ RETURNS float8
 AS '$libdir/automerge', 'autodoc_get_double'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION put_double(doc autodoc, key text, val float8)
+CREATE FUNCTION put_double(doc autodoc, key text, val float8, insert bool default true, message text default 'put_double')
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_put_double'
 LANGUAGE C STRICT;
@@ -111,7 +111,7 @@ RETURNS bool
 AS '$libdir/automerge', 'autodoc_get_bool'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION put_bool(doc autodoc, key text, val bool)
+CREATE FUNCTION put_bool(doc autodoc, key text, val bool, insert bool default true, message text default 'put_bool')
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_put_bool'
 LANGUAGE C STRICT;
@@ -126,7 +126,7 @@ RETURNS bigint
 AS '$libdir/automerge', 'autodoc_get_counter'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION put_counter(doc autodoc, key text, val bigint)
+CREATE FUNCTION put_counter(doc autodoc, key text, val bigint, insert bool default true, message text default 'put_counter')
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_put_counter'
 LANGUAGE C STRICT;
@@ -136,7 +136,7 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_inc_counter'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION put_text(doc autodoc, key text, val text)
+CREATE FUNCTION put_text(doc autodoc, key text, val text, insert bool default true, message text default 'put_text')
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_put_text'
 LANGUAGE C STRICT;
