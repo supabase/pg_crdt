@@ -69,7 +69,11 @@ select get_str('{"foo":"bar"}', '.foo');
 
 select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
 
-select put_str('{"foo":"bar"}', 'bing', 'bang')::jsonb;
+-- select put_str('{"foo":"bar"}', '.bing', 'bang')::jsonb;
+
+-- select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 3, false)::jsonb;
+
+-- select put_int('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 3, true)::jsonb;
 
 select get_str('{"foo":"bar"}', '.bar');
 
@@ -80,6 +84,10 @@ select get_double('{"pi":3.14159}', '.pi');
 select get_double('{"foo":{"bar":[1.1,2.2,3.3]}}', '.foo.bar[1]');
 
 select put_double('{"pi":3.14159}', '.e', 2.71828)::jsonb;
+
+select put_double('{"foo":{"bar":[1.1,2.2]}}', '.foo.bar[1]', 3.3, false)::jsonb;
+
+select put_double('{"foo":{"bar":[1.1,2.2]}}', '.foo.bar[1]', 3.3, true)::jsonb;
 
 select get_double('{"pi":3.14159}', '.e');
 
@@ -169,4 +177,7 @@ select pg_typeof(change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
 
 -- Get a change message
 
-select change_message(c) from get_changes(put_int(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar'), '.foo.baz', 2))  c;
+select change_message(c)
+    from get_changes(
+        put_int(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar'),
+                '.foo.baz', 2)) c;
