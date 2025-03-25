@@ -69,11 +69,11 @@ select get_str('{"foo":"bar"}', '.foo');
 
 select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
 
--- select put_str('{"foo":"bar"}', '.bing', 'bang')::jsonb;
+select put_str('{"foo":"bar"}', '.bing', 'bang')::jsonb;
 
--- select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 3, false)::jsonb;
+select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 'three', false)::jsonb;
 
--- select put_int('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 3, true)::jsonb;
+select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 'three', true)::jsonb;
 
 select get_str('{"foo":"bar"}', '.bar');
 
