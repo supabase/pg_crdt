@@ -1,10 +1,8 @@
-#include "../automerge.h"
 
-autodoc_Autodoc *_autodoc_traverse_inc_counter(autodoc_Autodoc *doc, const AMobjId *container,
-											   const char *expr, int64_t val);
+autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc, const AMobjId *container, const char *expr, _PG_TYPE val);
 
-autodoc_Autodoc *_autodoc_traverse_inc_counter(autodoc_Autodoc *doc, const AMobjId *container,
-											   const char *expr, int64_t val)
+autodoc_Autodoc *FN(_autodoc_traverse_put)(autodoc_Autodoc *doc, const AMobjId *container,
+										   const char *expr, _PG_TYPE val)
 {
     AMobjType containertype;
 	AMitem *item;
@@ -48,11 +46,11 @@ autodoc_Autodoc *_autodoc_traverse_inc_counter(autodoc_Autodoc *doc, const AMobj
 
 			valtype = AMitemValType(item);
 			if (valtype == AM_VAL_TYPE_OBJ_TYPE) {
-				return _autodoc_traverse_inc_counter(doc, AMitemObjId(item), p, val);
+				return FN(_autodoc_traverse_put)(doc, AMitemObjId(item), p, val);
 			}
 			else {
 				AMstackItem(&doc->stack,
-							AMmapIncrement(doc->doc, container, AMstr(token.value.key), val),
+							_AM_PUT_MAP(doc->doc, container, AMstr(token.value.key), val),
 							_abort_cb,
 							AMexpect(AM_VAL_TYPE_VOID));
 			return doc;
@@ -85,13 +83,20 @@ autodoc_Autodoc *_autodoc_traverse_inc_counter(autodoc_Autodoc *doc, const AMobj
 
 			valtype = AMitemValType(item);
 			if (valtype == AM_VAL_TYPE_OBJ_TYPE) {
-				return _autodoc_traverse_inc_counter(doc, AMitemObjId(item), p, val);
+				return FN(_autodoc_traverse_put)(doc, AMitemObjId(item), p, val);
 			}
 			else {
+				#ifndef _EXPECT_COUNTER
+				AMstackItem(&doc->stack,
+							_AM_PUT_LIST(doc->doc, container, token.value.index, false, val),
+							_abort_cb,
+							AMexpect(AM_VAL_TYPE_VOID));
+				#else
 				AMstackItem(&doc->stack,
 							AMlistIncrement(doc->doc, container, token.value.index, val),
 							_abort_cb,
 							AMexpect(AM_VAL_TYPE_VOID));
+				#endif
 			return doc;
 			}
         }
@@ -101,23 +106,3 @@ autodoc_Autodoc *_autodoc_traverse_inc_counter(autodoc_Autodoc *doc, const AMobj
     }
 	ereport(ERROR, errmsg("No value found for path: %s\n", expr));
 }
-
-PG_FUNCTION_INFO_V1(autodoc_inc_counter);
-Datum autodoc_inc_counter(PG_FUNCTION_ARGS)
-{
-	autodoc_Autodoc *doc;
-	text *path;
-	int64_t val;
-
-	LOGF();
-	doc = AUTODOC_GETARG(0);
-	path = PG_GETARG_TEXT_PP(1);
-	val = PG_GETARG_INT64(2);
-
-	doc = _autodoc_traverse_inc_counter(doc, AM_ROOT, text_to_cstring(path), val);
-	AUTODOC_RETURN(doc);
-}
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

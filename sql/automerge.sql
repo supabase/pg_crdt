@@ -103,9 +103,9 @@ select get_counter(put_counter('{}', '.bar', 1), '.bar');
 
 select get_counter(inc_counter(put_counter('{}', '.bar', 1), '.bar'), '.bar');
 
-select get_counter(inc_counter(put_counter('{}', '.bar', 1), 'bar', 2), '.bar');
+select get_counter(inc_counter(put_counter('{}', '.bar', 1), '.bar', 2), '.bar');
 
-select get_counter(inc_counter(put_counter('{}', '.bar', 1), 'bar', -2), '.bar');
+select get_counter(inc_counter(put_counter('{}', '.bar', 1), '.bar', -2), '.bar');
 
 select get_counter(put_counter('{}', '.bar', 1), '.foo');
 

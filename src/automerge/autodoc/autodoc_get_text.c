@@ -1,5 +1,11 @@
 #include "../automerge.h"
 
+#define _SUFFIX _text
+#define _AM_EXPECTED_VAL_TYPE AM_VAL_TYPE_OBJ_TYPE
+#define _AM_EXPECTED_TEXT
+
+#include "autodoc_traverse_get_template.h"
+
 PG_FUNCTION_INFO_V1(autodoc_get_text);
 Datum autodoc_get_text(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
@@ -16,7 +22,7 @@ Datum autodoc_get_text(PG_FUNCTION_ARGS) {
 	doc = AUTODOC_GETARG(0);
 	key = PG_GETARG_TEXT_PP(1);
 
-	item = _autodoc_traverse(doc, AM_ROOT, text_to_cstring(key), AM_VAL_TYPE_OBJ_TYPE);
+	item = _autodoc_traverse_get_text(doc, AM_ROOT, text_to_cstring(key));
 	valtype = AMitemValType(item);
 
 	if (valtype == AM_VAL_TYPE_VOID)
