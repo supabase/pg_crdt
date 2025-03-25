@@ -116,9 +116,30 @@ select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
 └──────────┘
 (1 row)
 
--- select put_str('{"foo":"bar"}', '.bing', 'bang')::jsonb;
--- select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 3, false)::jsonb;
--- select put_int('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 3, true)::jsonb;
+select put_str('{"foo":"bar"}', '.bing', 'bang')::jsonb;
+┌────────────────────────────────┐
+│            put_str             │
+├────────────────────────────────┤
+│ {"foo": "bar", "bing": "bang"} │
+└────────────────────────────────┘
+(1 row)
+
+select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 'three', false)::jsonb;
+┌───────────────────────────────────────┐
+│                put_str                │
+├───────────────────────────────────────┤
+│ {"foo": {"bar": ["onetwo", "three"]}} │
+└───────────────────────────────────────┘
+(1 row)
+
+select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 'three', true)::jsonb;
+┌──────────────────────────────────────────────┐
+│                   put_str                    │
+├──────────────────────────────────────────────┤
+│ {"foo": {"bar": ["onetwo", "three", "two"]}} │
+└──────────────────────────────────────────────┘
+(1 row)
+
 select get_str('{"foo":"bar"}', '.bar');
 ERROR:  Path .bar not found.
 -- ### Doubles
