@@ -44,7 +44,7 @@ static JsonbValue *_am_walk_map(autodoc_Autodoc *doc, AMobjId const *objid, Json
     keys = AMstackItems(&doc->stack,
                         AMkeys(doc->doc, objid, NULL),
                         _abort_cb,
-                        AMexpect(AM_VAL_TYPE_STR));
+                        NULL);
 
     pushJsonbValue(&state, WJB_BEGIN_OBJECT, NULL);
 
