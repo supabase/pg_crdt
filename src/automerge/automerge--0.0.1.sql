@@ -46,6 +46,11 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_merge'
 LANGUAGE C STRICT;
 
+CREATE FUNCTION apply(autodoc, autochange)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_apply_change'
+LANGUAGE C STRICT;
+
 CREATE FUNCTION get_actor_id(doc autodoc)
 RETURNS text
 AS '$libdir/automerge', 'autodoc_get_actor_id'

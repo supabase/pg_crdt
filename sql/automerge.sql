@@ -147,6 +147,12 @@ select get_actor_id(
 --
 select * from get_changes('{"foo":{"bar":1}}');
 
+-- Apply a change from one doc to another:
+
+select * from get_changes('{"foo":{"bar":1}}') change limit 1 \gset
+
+select apply('{"baz":true}', :'change')::jsonb;
+
 -- Get a change hash
 
 select change_hash(c) from get_changes('{"foo":{"bar":1}}') c;
