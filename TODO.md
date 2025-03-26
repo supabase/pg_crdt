@@ -1,4 +1,6 @@
 
+- CI with action that runs tests and build docs
+
 - Marks
 
 - Teams demo with PostgREST
@@ -22,3 +24,5 @@
 - Change diffs (doc1 - doc2?) (AMgetMissingDeps)
 
 - Change dependencies (AMchangeDeps)
+
+- Explore syncChange support for syncing with other peers in network
