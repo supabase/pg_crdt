@@ -76,10 +76,13 @@ RETURNS bytea
 AS '$libdir/automerge', 'autochange_get_change_hash'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION get_change_time(autochange)
-RETURNS bigint
-AS '$libdir/automerge', 'autochange_get_change_time'
-LANGUAGE C STRICT;
+-- Seems to always return 0 and there's no automerge-c test for it so
+-- keeping out for now.
+--
+-- CREATE FUNCTION get_change_time(autochange)
+-- RETURNS bigint
+-- AS '$libdir/automerge', 'autochange_get_change_time'
+-- LANGUAGE C STRICT;
 
 CREATE FUNCTION get_changes(autodoc)
 RETURNS SETOF autochange

@@ -377,7 +377,7 @@ select apply('{"baz":true}', :'change')::jsonb;
 ```
 Get a change hash
 ``` postgres-console
-select pg_typeof(change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
+select pg_typeof(get_change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
 ┌───────────┐
 │ pg_typeof │
 ├───────────┤
@@ -386,18 +386,20 @@ select pg_typeof(change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
 (1 row)
 
 ```
-Get a change message
+Get a change message, actor_id and timestamps
 ``` postgres-console
-select change_message(c)
+select get_change_hash(c),
+       get_change_message(c),
+       get_actor_id(c)
     from get_changes(
         put_int(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar'),
                 '.foo.baz', 2)) c;
-┌──────────────────┐
-│  change_message  │
-├──────────────────┤
-│ making a foo bar │
-│ put_int          │
-└──────────────────┘
+┌────────────────────────────────────────────────────────────────────┬────────────────────┬──────────────────────────────────┐
+│                          get_change_hash                           │ get_change_message │           get_actor_id           │
+├────────────────────────────────────────────────────────────────────┼────────────────────┼──────────────────────────────────┤
+│ \x1404e67acc5392f477d11a1d2e4f9afe87796ff8ccd1a5feb37517a082e0d821 │ making a foo bar   │ 22fbc15a4b514181b0f87416362e86a4 │
+│ \x26c2533a0d0070c80c07209330483ee1f926f365bb21a90156878e56953a499b │ put_int            │ 22fbc15a4b514181b0f87416362e86a4 │
+└────────────────────────────────────────────────────────────────────┴────────────────────┴──────────────────────────────────┘
 (2 rows)
 
 ```

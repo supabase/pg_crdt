@@ -177,9 +177,9 @@ select pg_typeof(get_change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
 
 -- Get a change message, actor_id and timestamps
 
-select get_change_message(c),
-       get_actor_id(c),
-       get_change_time(c)
+select get_change_hash(c),
+       get_change_message(c),
+       get_actor_id(c)
     from get_changes(
         put_int(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar'),
                 '.foo.baz', 2)) c;
