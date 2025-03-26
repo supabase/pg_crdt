@@ -128,11 +128,11 @@ select get_counter(put_counter('{}', '.bar', 1), '.foo');
 -- NOTE: Text have no jsonb input representation, on output they are
 -- represented as JSON string.
 
-select put_text('{"foo":"bar"}', 'bing', 'bang')::jsonb;
+select put_text('{"foo":"bar"}', '.bing', 'bang')::jsonb;
 
-select get_text(put_text('{"foo":"bar"}', 'bing', 'bang'), '.bing');
+select get_text(put_text('{"foo":[]}', '.foo[0]', 'bang'), '.foo[0]');
 
-select splice_text(put_text('{"foo":"bar"}', 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
+select splice_text(put_text('{"foo":"bar"}', '.bing', 'bang'), '.bing', 1, 3, 'ork')::jsonb;
 
 -- ## Actor Ids
 --

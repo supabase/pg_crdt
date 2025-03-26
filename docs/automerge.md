@@ -114,11 +114,11 @@ select get_str('{"foo":"bar"}', '.foo');
 (1 row)
 
 select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
-┌──────────┐
-│ get_str  │
-├──────────┤
-│ twothree │
-└──────────┘
+┌─────────┐
+│ get_str │
+├─────────┤
+│ two     │
+└─────────┘
 (1 row)
 
 select put_str('{"foo":"bar"}', '.bing', 'bang')::jsonb;
@@ -130,19 +130,19 @@ select put_str('{"foo":"bar"}', '.bing', 'bang')::jsonb;
 (1 row)
 
 select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 'three', false)::jsonb;
-┌───────────────────────────────────────┐
-│                put_str                │
-├───────────────────────────────────────┤
-│ {"foo": {"bar": ["onetwo", "three"]}} │
-└───────────────────────────────────────┘
+┌────────────────────────────────────┐
+│              put_str               │
+├────────────────────────────────────┤
+│ {"foo": {"bar": ["one", "three"]}} │
+└────────────────────────────────────┘
 (1 row)
 
 select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 'three', true)::jsonb;
-┌──────────────────────────────────────────────┐
-│                   put_str                    │
-├──────────────────────────────────────────────┤
-│ {"foo": {"bar": ["onetwo", "three", "two"]}} │
-└──────────────────────────────────────────────┘
+┌───────────────────────────────────────────┐
+│                  put_str                  │
+├───────────────────────────────────────────┤
+│ {"foo": {"bar": ["one", "three", "two"]}} │
+└───────────────────────────────────────────┘
 (1 row)
 
 select get_str('{"foo":"bar"}', '.bar');
@@ -286,7 +286,7 @@ changing ("splicing") text in and out efficiently.
 NOTE: Text have no jsonb input representation, on output they are
 represented as JSON string.
 ``` postgres-console
-select put_text('{"foo":"bar"}', 'bing', 'bang')::jsonb;
+select put_text('{"foo":"bar"}', '.bing', 'bang')::jsonb;
 ┌────────────────────────────────┐
 │            put_text            │
 ├────────────────────────────────┤
@@ -294,7 +294,7 @@ select put_text('{"foo":"bar"}', 'bing', 'bang')::jsonb;
 └────────────────────────────────┘
 (1 row)
 
-select get_text(put_text('{"foo":"bar"}', 'bing', 'bang'), '.bing');
+select get_text(put_text('{"foo":[]}', '.foo[0]', 'bang'), '.foo[0]');
 ┌──────────┐
 │ get_text │
 ├──────────┤
@@ -302,7 +302,7 @@ select get_text(put_text('{"foo":"bar"}', 'bing', 'bang'), '.bing');
 └──────────┘
 (1 row)
 
-select splice_text(put_text('{"foo":"bar"}', 'bing', 'bang'), 'bing', 1, 3, 'ork')::jsonb;
+select splice_text(put_text('{"foo":"bar"}', '.bing', 'bang'), '.bing', 1, 3, 'ork')::jsonb;
 ┌────────────────────────────────┐
 │          splice_text           │
 ├────────────────────────────────┤

@@ -229,7 +229,10 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 					case jbvString:
 						AMstackItem(NULL,
 									AMlistPutStr(doc->doc, objid,
-												 SIZE_MAX, true, AMbytes((const unsigned char*)v.val.string.val, v.val.string.len)),
+												 SIZE_MAX,
+												 true,
+												 AMbytes((const unsigned char*)v.val.string.val,
+														 v.val.string.len)),
 									_abort_cb,
 									AMexpect(AM_VAL_TYPE_VOID));
 						break;

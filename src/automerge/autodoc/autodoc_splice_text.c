@@ -1,5 +1,7 @@
 #include "../automerge.h"
 
+AMitem *_autodoc_traverse_get_text(autodoc_Autodoc *doc, const AMobjId *container, const char *expr);
+
 PG_FUNCTION_INFO_V1(autodoc_splice_text);
 Datum autodoc_splice_text(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
@@ -20,14 +22,7 @@ Datum autodoc_splice_text(PG_FUNCTION_ARGS) {
 	del = PG_GETARG_INT64(3);
 	val = PG_GETARG_TEXT_PP(4);
 
-	item = AMstackItem(
-		&doc->stack,
-		AMmapGet(doc->doc,
-				 AM_ROOT,
-				 AMstr(text_to_cstring(key)),
-				 NULL),
-		_abort_cb,
-		AMexpect(AM_VAL_TYPE_OBJ_TYPE));
+	item = _autodoc_traverse_get_text(doc, AM_ROOT, text_to_cstring(key));
 
 	valtype = AMitemValType(item);
 
