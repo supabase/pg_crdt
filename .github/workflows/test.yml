@@ -1,0 +1,27 @@
+name: pg_crdt tests
+
+on:
+  push:
+    branches: [ * ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Start custom Docker container
+        run: |
+          docker compose build --progress=plain && docker compose up -d
+          
+      - name: Wait for container to be ready
+        run: sleep 10
+
+      - name: Run make installcheck in container
+        run: docker exec custom_pg make installcheck
+
+      - name: Clean up container
+        if: always()
+        run: docker stop custom_pg && docker rm custom_pg
