@@ -16,7 +16,3 @@ Datum autochange_get_change_hash(PG_FUNCTION_ARGS) {
     PG_RETURN_BYTEA_P(bin);
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

@@ -208,7 +208,3 @@ DatumGetAutodoc(Datum d) {
 	return doc;
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

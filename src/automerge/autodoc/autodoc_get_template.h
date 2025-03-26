@@ -36,7 +36,3 @@ Datum FN(autodoc_get)(PG_FUNCTION_ARGS)
 #undef _AM_EXPECTED_TO_VAL
 #undef _PG_RETURN
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

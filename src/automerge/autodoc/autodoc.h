@@ -72,7 +72,3 @@ typedef struct {
 
 #endif /* AUTODOC_H */
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

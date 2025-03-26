@@ -288,7 +288,3 @@ static void _array_walk(JsonbIterator **it, autodoc_Autodoc *doc, AMobjId const 
 	}
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

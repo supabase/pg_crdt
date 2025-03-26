@@ -51,7 +51,3 @@ autochange_Autochange *DatumGetAutochange(Datum d);
 
 #endif /* AUTOCHANGE_H */
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

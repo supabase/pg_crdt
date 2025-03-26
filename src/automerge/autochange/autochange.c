@@ -150,7 +150,3 @@ DatumGetAutochange(Datum d) {
 	return change;
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

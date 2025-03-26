@@ -8,7 +8,3 @@
 
 #include "autodoc_put_template.h"
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

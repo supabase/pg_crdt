@@ -24,7 +24,3 @@ Datum autodoc_apply_change(PG_FUNCTION_ARGS) {
     AUTODOC_RETURN(doc);
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

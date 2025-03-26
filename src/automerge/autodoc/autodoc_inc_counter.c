@@ -117,7 +117,3 @@ Datum autodoc_inc_counter(PG_FUNCTION_ARGS)
 	doc = _autodoc_traverse_inc_counter(doc, AM_ROOT, text_to_cstring(path), val);
 	AUTODOC_RETURN(doc);
 }
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

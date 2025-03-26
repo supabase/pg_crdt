@@ -41,7 +41,3 @@ Datum FN(autodoc_put)(PG_FUNCTION_ARGS)
 #undef _AM_PUT_LIST
 #undef _EXPECT_COUNTER
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

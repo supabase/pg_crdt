@@ -44,7 +44,9 @@ RUN git clone --depth 1 ${POSTGRES_REPO} postgres
 WORKDIR /usr/src/postgres
 RUN ./configure --prefix=${INSTALL_PREFIX} --enable-debug --enable-cassert --without-icu && \
     make -j$(nproc) && \
-    make install
+    make install && \
+    cd contrib/pgcrypto && \
+    make && make install
 
 # Add PostgreSQL binaries to the path
 ENV PATH="${INSTALL_PREFIX}/bin:${PATH}"

@@ -51,8 +51,13 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_apply_change'
 LANGUAGE C STRICT;
 
+CREATE FUNCTION get_actor_id()
+RETURNS bytea
+AS '$libdir/automerge', 'autodoc_get_new_actor_id'
+LANGUAGE C STRICT;
+
 CREATE FUNCTION get_actor_id(doc autodoc)
-RETURNS text
+RETURNS bytea
 AS '$libdir/automerge', 'autodoc_get_actor_id'
 LANGUAGE C STRICT;
 
@@ -67,7 +72,7 @@ AS '$libdir/automerge', 'autochange_message'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_actor_id(doc autochange)
-RETURNS text
+RETURNS bytea
 AS '$libdir/automerge', 'autochange_get_actor_id'
 LANGUAGE C STRICT;
 

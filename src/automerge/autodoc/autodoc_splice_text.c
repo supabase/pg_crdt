@@ -50,7 +50,3 @@ Datum autodoc_splice_text(PG_FUNCTION_ARGS) {
 	AUTODOC_RETURN(doc);
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

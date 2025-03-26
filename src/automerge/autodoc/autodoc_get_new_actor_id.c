@@ -1,17 +1,16 @@
 #include "../automerge.h"
 
-PG_FUNCTION_INFO_V1(autodoc_get_actor_id);
-Datum autodoc_get_actor_id(PG_FUNCTION_ARGS) {
-	autodoc_Autodoc *doc;
+PG_FUNCTION_INFO_V1(autodoc_get_new_actor_id);
+Datum autodoc_get_new_actor_id(PG_FUNCTION_ARGS) {
     AMactorId const* actor_id;
 	AMbyteSpan bs;
-    bytea *result;
+    AMstack* stack = NULL;
+	bytea *result;
 
 	LOGF();
 
-	doc = AUTODOC_GETARG(0);
-    AMitemToActorId(AMstackItem(&doc->stack,
-								AMgetActorId(doc->doc),
+    AMitemToActorId(AMstackItem(&stack,
+								AMactorIdInit(),
 								_abort_cb,
 								AMexpect(AM_VAL_TYPE_ACTOR_ID)),
 					&actor_id);
@@ -20,5 +19,6 @@ Datum autodoc_get_actor_id(PG_FUNCTION_ARGS) {
 	result = (bytea *) palloc(bs.count + VARHDRSZ);
 	SET_VARSIZE(result, bs.count + VARHDRSZ);
 	memcpy(VARDATA(result), bs.src, bs.count);
+    AMstackFree(&stack);
     PG_RETURN_BYTEA_P(result);
 }

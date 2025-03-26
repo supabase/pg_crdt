@@ -4,16 +4,17 @@ PG_FUNCTION_INFO_V1(autodoc_set_actor_id);
 Datum autodoc_set_actor_id(PG_FUNCTION_ARGS) {
 	autodoc_Autodoc *doc;
     AMactorId const* actor_id;
-	text *actor_text;
+	bytea *actor_id_bytea;
 
 	LOGF();
 
 	doc = AUTODOC_GETARG(0);
-	actor_text = PG_GETARG_TEXT_PP(1);
+	actor_id_bytea = PG_GETARG_BYTEA_P(1);
 
 	AMitemToActorId(AMstackItem(
 						&doc->stack,
-						AMactorIdFromStr(AMstr(text_to_cstring(actor_text))),
+						AMactorIdFromStr(AMbytes((const unsigned char*)VARDATA(actor_id_bytea),
+                                                 VARSIZE_ANY_EXHDR(actor_id_bytea))),
 						_abort_cb,
 						AMexpect(AM_VAL_TYPE_ACTOR_ID)),
 					&actor_id);
@@ -28,7 +29,3 @@ Datum autodoc_set_actor_id(PG_FUNCTION_ARGS) {
 
 SUPPORT_FN(autodoc_set_actor_id, linitial);
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

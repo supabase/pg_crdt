@@ -22,7 +22,3 @@ autochange_in(PG_FUNCTION_ARGS) {
     AUTOCHANGE_RETURN(change);
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

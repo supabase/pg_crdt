@@ -90,7 +90,3 @@ AMitem *_autodoc_traverse(autodoc_Autodoc *doc, const AMobjId *container, const 
 	ereport(ERROR, errmsg("No value found for path: %s\n", expr));
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

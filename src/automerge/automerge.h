@@ -57,7 +57,3 @@ void _PG_init(void);
 
 #endif /* AUTOMERGE_H */
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

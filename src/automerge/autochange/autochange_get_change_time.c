@@ -9,7 +9,3 @@ Datum autochange_get_change_time(PG_FUNCTION_ARGS) {
     PG_RETURN_INT64(AMchangeTime(change->change));
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

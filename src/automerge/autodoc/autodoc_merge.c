@@ -33,7 +33,3 @@ Datum autodoc_merge(PG_FUNCTION_ARGS) {
     AUTODOC_RETURN(doc1);
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

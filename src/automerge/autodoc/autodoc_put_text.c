@@ -149,7 +149,3 @@ autodoc_Autodoc *_autodoc_traverse_put_text(autodoc_Autodoc *doc,
 	ereport(ERROR, errmsg("No value found for path: %s\n", expr));
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */

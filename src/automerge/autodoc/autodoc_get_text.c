@@ -51,7 +51,3 @@ Datum autodoc_get_text(PG_FUNCTION_ARGS) {
 	PG_RETURN_TEXT_P(val);
 }
 
-/* Local Variables: */
-/* mode: c */
-/* c-file-style: "postgresql" */
-/* End: */
