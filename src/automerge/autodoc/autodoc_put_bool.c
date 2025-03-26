@@ -7,4 +7,3 @@
 #define _AM_PUT_LIST AMlistPutBool
 
 #include "autodoc_put_template.h"
-

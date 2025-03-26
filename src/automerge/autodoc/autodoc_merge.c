@@ -20,16 +20,13 @@ select merge('{"foo": 1}'::jsonb::autodoc, '{"bar": 2}'::jsonb::autodoc)::jsonb;
 
 PG_FUNCTION_INFO_V1(autodoc_merge);
 Datum autodoc_merge(PG_FUNCTION_ARGS) {
-	autodoc_Autodoc *doc1, *doc2;
+  autodoc_Autodoc *doc1, *doc2;
 
-	LOGF();
+  LOGF();
 
-	doc1 = AUTODOC_GETARG(0);
-	doc2 = AUTODOC_GETARG(1);
-    AMstackItem(&doc1->stack,
-				AMmerge(doc1->doc, doc2->doc),
-				_abort_cb,
-				AMexpect(AM_VAL_TYPE_CHANGE_HASH));
-    AUTODOC_RETURN(doc1);
+  doc1 = AUTODOC_GETARG(0);
+  doc2 = AUTODOC_GETARG(1);
+  AMstackItem(&doc1->stack, AMmerge(doc1->doc, doc2->doc), _abort_cb,
+              AMexpect(AM_VAL_TYPE_CHANGE_HASH));
+  AUTODOC_RETURN(doc1);
 }
-

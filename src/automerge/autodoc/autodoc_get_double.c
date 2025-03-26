@@ -7,4 +7,3 @@
 #define _PG_RETURN PG_RETURN_FLOAT8(val)
 
 #include "autodoc_get_template.h"
-
