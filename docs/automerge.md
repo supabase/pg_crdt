@@ -366,6 +366,7 @@ select pg_typeof(c) from get_changes('{"foo":{"bar":1}}') c;
 ```
 Apply a change from one doc to another:
 ``` postgres-console
+select * from get_changes('{"foo":{"bar":1}}') change limit 1 \gset
 select apply('{"baz":true}', :'change')::jsonb;
 ┌──────────────────────────────────┐
 │              apply               │
@@ -375,18 +376,7 @@ select apply('{"baz":true}', :'change')::jsonb;
 (1 row)
 
 ```
-Get a change hash
-``` postgres-console
-select pg_typeof(get_change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
-┌───────────┐
-│ pg_typeof │
-├───────────┤
-│ bytea     │
-└───────────┘
-(1 row)
-
-```
-Get a change message, actor_id and timestamps
+Get a change hash, message and actor_id:
 ``` postgres-console
 select get_change_hash(c),
        get_change_message(c),
@@ -397,8 +387,8 @@ select get_change_hash(c),
 ┌────────────────────────────────────────────────────────────────────┬────────────────────┬──────────────────────────────────┐
 │                          get_change_hash                           │ get_change_message │           get_actor_id           │
 ├────────────────────────────────────────────────────────────────────┼────────────────────┼──────────────────────────────────┤
-│ \x1404e67acc5392f477d11a1d2e4f9afe87796ff8ccd1a5feb37517a082e0d821 │ making a foo bar   │ 22fbc15a4b514181b0f87416362e86a4 │
-│ \x26c2533a0d0070c80c07209330483ee1f926f365bb21a90156878e56953a499b │ put_int            │ 22fbc15a4b514181b0f87416362e86a4 │
+│ \x7e017302b9bce3d8265354f9623410dc9b32d9decd128f0200e17c39fd4d25f0 │ making a foo bar   │ 606968f3bd2149988950a054330cca19 │
+│ \xab2cd72bb8414b63f55b112bfbc0749fd0be95e81927cbc8fe65031deef3b4d2 │ put_int            │ 606968f3bd2149988950a054330cca19 │
 └────────────────────────────────────────────────────────────────────┴────────────────────┴──────────────────────────────────┘
 (2 rows)
 

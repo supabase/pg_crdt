@@ -171,11 +171,8 @@ select * from get_changes('{"foo":{"bar":1}}') change limit 1 \gset
 
 select apply('{"baz":true}', :'change')::jsonb;
 
--- Get a change hash
 
-select pg_typeof(get_change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
-
--- Get a change message, actor_id and timestamps
+-- Get a change hash, message and actor_id:
 
 select get_change_hash(c),
        get_change_message(c),

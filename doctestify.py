@@ -8,7 +8,7 @@ def doctestify(test):
     in_code_block = False
 
     for line in lines:
-        if line.startswith("\\") or "\\gset" in line or "-- pragma:hide" in line:
+        if line.startswith("\\") or "-- pragma:hide" in line:
             continue
         if line.startswith("--") and not line.startswith("---"):
             if in_code_block:
