@@ -2,7 +2,6 @@ name: pg_crdt tests
 
 on:
   push:
-    branches: [ * ]
   pull_request:
 
 jobs:
