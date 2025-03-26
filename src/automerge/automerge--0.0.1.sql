@@ -61,14 +61,24 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_set_actor_id'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION change_message(autochange)
+CREATE FUNCTION get_change_message(autochange)
 RETURNS text
 AS '$libdir/automerge', 'autochange_message'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION change_hash(autochange)
+CREATE FUNCTION get_actor_id(doc autochange)
+RETURNS text
+AS '$libdir/automerge', 'autochange_get_actor_id'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION get_change_hash(autochange)
 RETURNS bytea
 AS '$libdir/automerge', 'autochange_get_change_hash'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION get_change_time(autochange)
+RETURNS bigint
+AS '$libdir/automerge', 'autochange_get_change_time'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_changes(autodoc)

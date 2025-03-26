@@ -173,11 +173,13 @@ select apply('{"baz":true}', :'change')::jsonb;
 
 -- Get a change hash
 
-select pg_typeof(change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
+select pg_typeof(get_change_hash(c)) from get_changes('{"foo":{"bar":1}}') c;
 
--- Get a change message
+-- Get a change message, actor_id and timestamps
 
-select change_message(c)
+select get_change_message(c),
+       get_actor_id(c),
+       get_change_time(c)
     from get_changes(
         put_int(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar'),
                 '.foo.baz', 2)) c;
