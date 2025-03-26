@@ -19,7 +19,7 @@ jobs:
         run: sleep 10
 
       - name: Run make installcheck in container
-        run: docker exec custom_pg make installcheck
+        run: docker exec pg_w_pg_crdt make installcheck
 
       - name: Clean up container
         if: always()
