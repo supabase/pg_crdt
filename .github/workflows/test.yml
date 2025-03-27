@@ -22,11 +22,7 @@ jobs:
         run: docker exec pg_w_pg_crdt make installcheck
 
       - name: Doctestify results
-        run: docker exec pg_w_pg_crdt python3 doctestify.py results/automerge.sql
-
-      - name: Clean up container
-        if: always()
-        run: docker stop pg_w_pg_crdt && docker rm pg_w_pg_crdt
+        run: docker exec pg_w_pg_crdt python3 doctestify.py results/automerge.out
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -41,3 +37,9 @@ jobs:
 
       - name: Deploy Documentation to GitHub Pages
         run: mkdocs gh-deploy --force
+
+      - name: Clean up container
+        if: always()
+        run: docker stop pg_w_pg_crdt && docker rm pg_w_pg_crdt
+
+        
