@@ -297,6 +297,18 @@ select splice_text(put_text('{"foo":"bar"}', '.bing', 'bang'), '.bing', 1, 3, 'o
 └────────────────────────────────┘
 (1 row)
 
+-- ### Marks
+--
+-- Marks are objects that span a region of a text object decorating
+-- that region with information such as "bold" or "italic".
+select * from get_marks(create_mark(put_text('{}', '.foo', 'bar'), '.foo', 0, 1, 'bold'), '.foo');
+┌──────┬───────────┬─────────┐
+│ name │ start_pos │ end_pos │
+├──────┼───────────┼─────────┤
+│ bold │         0 │       1 │
+└──────┴───────────┴─────────┘
+(1 row)
+
 -- ## Actor Ids
 --
 -- Automerge supports a notion of "Actor Ids" that identify the actors

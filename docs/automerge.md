@@ -311,6 +311,20 @@ select splice_text(put_text('{"foo":"bar"}', '.bing', 'bang'), '.bing', 1, 3, 'o
 (1 row)
 
 ```
+### Marks
+
+Marks are objects that span a region of a text object decorating
+that region with information such as "bold" or "italic".
+``` postgres-console
+select * from get_marks(create_mark(put_text('{}', '.foo', 'bar'), '.foo', 0, 1, 'bold'), '.foo');
+┌──────┬───────────┬─────────┐
+│ name │ start_pos │ end_pos │
+├──────┼───────────┼─────────┤
+│ bold │         0 │       1 │
+└──────┴───────────┴─────────┘
+(1 row)
+
+```
 ## Actor Ids
 
 Automerge supports a notion of "Actor Ids" that identify the actors
@@ -378,18 +392,18 @@ select apply('{"baz":true}', :'change')::jsonb;
 ```
 Get a change hash, message and actor_id:
 ``` postgres-console
-select get_change_hash(c),
+select pg_typeof(get_change_hash(c)),
        get_change_message(c),
-       get_actor_id(c)
+       pg_typeof(get_actor_id(c))
     from get_changes(
         put_int(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar'),
                 '.foo.baz', 2)) c;
-┌────────────────────────────────────────────────────────────────────┬────────────────────┬────────────────────────────────────────────────────────────────────┐
-│                          get_change_hash                           │ get_change_message │                            get_actor_id                            │
-├────────────────────────────────────────────────────────────────────┼────────────────────┼────────────────────────────────────────────────────────────────────┤
-│ \xcf6df24e75f7a3b5e82b8b0704fe74499c14cfc8d1a51f3c5cc068981ce38710 │ making a foo bar   │ \x3065376532326538663130363438643439363936643936393232343839623563 │
-│ \x20ec554ab4e798f6cd3b1617d363adcf7582fabea761fe1fc312c177c3fff56e │ put_int            │ \x3065376532326538663130363438643439363936643936393232343839623563 │
-└────────────────────────────────────────────────────────────────────┴────────────────────┴────────────────────────────────────────────────────────────────────┘
+┌───────────┬────────────────────┬───────────┐
+│ pg_typeof │ get_change_message │ pg_typeof │
+├───────────┼────────────────────┼───────────┤
+│ bytea     │ making a foo bar   │ bytea     │
+│ bytea     │ put_int            │ bytea     │
+└───────────┴────────────────────┴───────────┘
 (2 rows)
 
 ```

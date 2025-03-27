@@ -134,6 +134,13 @@ select get_text(put_text('{"foo":[]}', '.foo[0]', 'bang'), '.foo[0]');
 
 select splice_text(put_text('{"foo":"bar"}', '.bing', 'bang'), '.bing', 1, 3, 'ork')::jsonb;
 
+-- ### Marks
+--
+-- Marks are objects that span a region of a text object decorating
+-- that region with information such as "bold" or "italic".
+
+select * from get_marks(create_mark(put_text('{}', '.foo', 'bar'), '.foo', 0, 1, 'bold'), '.foo');
+
 -- ## Actor Ids
 --
 -- Automerge supports a notion of "Actor Ids" that identify the actors

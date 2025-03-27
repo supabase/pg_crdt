@@ -34,6 +34,10 @@ typedef struct autodoc_ChangesState {
     autochange_Autochange **changes;
 } autodoc_ChangesState;
 
+typedef struct autodoc_MarksState {
+     AMitems marks;
+} autodoc_MarksState;
+
 /* Create a new autodoc datum. */
 autodoc_Autodoc *
 new_expanded_autodoc(autodoc_FlatAutodoc* flat, MemoryContext parentcontext);

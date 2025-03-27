@@ -164,6 +164,16 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_splice_text'
 LANGUAGE C STRICT;
 
+CREATE FUNCTION create_mark(doc autodoc, path text, start_pos bigint, end_pos bigint, name text)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_create_mark'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION get_marks(doc autodoc, path text)
+RETURNS TABLE(name text, start_pos bigint, end_pos bigint)
+AS '$libdir/automerge', 'autodoc_get_marks'
+LANGUAGE C STRICT;
+
 CREATE FUNCTION from_jsonb(jsonb, commit_message text)
 RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_from_jsonb'
