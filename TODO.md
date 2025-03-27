@@ -1,6 +1,4 @@
 
-- CI with action that runs tests and build docs
-
 - Marks
 
 - Teams demo with PostgREST
