@@ -21,6 +21,9 @@ jobs:
       - name: Run make installcheck in container
         run: docker exec pg_w_pg_crdt make installcheck
 
+      - name: Doctestify results
+        run: docker exec pg_w_pg_crdt python3 doctestify.py results/automerge.sql
+
       - name: Clean up container
         if: always()
         run: docker stop pg_w_pg_crdt && docker rm pg_w_pg_crdt
@@ -29,9 +32,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-
-      - name: Doctestify results
-        run: python doctestify.py results/automerge.sql
 
       - name: Install MkDocs
         run: pip install mkdocs
