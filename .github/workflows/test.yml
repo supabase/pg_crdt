@@ -31,7 +31,7 @@ jobs:
           python-version: '3.x'
 
       - name: Doctestify results
-        run: docker exec pg_w_pg_crdt python doctestify.py results/automerge.sql
+        run: python doctestify.py results/automerge.sql
 
       - name: Install MkDocs
         run: pip install mkdocs
