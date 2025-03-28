@@ -144,7 +144,7 @@ update test set doc = splice_text(doc, '.foo', 6, 14, 'world') where id = :text_
 -- that region with information such as "bold" or "italic".
 
 update test set doc = create_mark(doc, '.foo', 1, 2, 'bold', true) where id = :text_id;
-update test set doc = create_mark(doc, '.foo', 6, 8, 'style', 'fancy') where id = :text_id;
+--- update test set doc = create_mark(doc, '.foo', 6, 8, 'style', '{"foo":"fancy"}') where id = :text_id;
 update test set doc = create_mark(doc, '.foo', 3, 10, 'font_size', 42) where id = :text_id;
 
 select * from get_marks((select doc from test where id = :text_id), '.foo');

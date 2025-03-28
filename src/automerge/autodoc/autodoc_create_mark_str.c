@@ -9,7 +9,7 @@ Datum autodoc_create_mark_str(PG_FUNCTION_ARGS) {
   text *path, *name, *val;
   AMitem *item, *valitem;
   size_t start, end;
-  char *pathstr;
+  char *pathstr, *valstr;
   AMvalType valtype;
   AMobjId const *itemid;
   AMobjType itemtype;
@@ -38,9 +38,9 @@ Datum autodoc_create_mark_str(PG_FUNCTION_ARGS) {
     ereport(ERROR,
             errmsg("Path %s is not an automerge text.", text_to_cstring(path)));
 
+  valstr = text_to_cstring(val);
   valitem = AMstackItem(&doc->stack,
-                        AMitemFromStr(AMbytes((const uint8_t *)VARDATA_ANY(val),
-                                              VARSIZE_ANY_EXHDR(val))),
+                        AMitemFromStr(AMbytes((const uint8_t *)valstr, strlen(valstr))),
                         _abort_cb,
                         AMexpect(AM_VAL_TYPE_STR));
 

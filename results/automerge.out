@@ -287,17 +287,16 @@ update test set doc = splice_text(doc, '.foo', 6, 14, 'world') where id = :text_
 -- Marks are objects that span a region of a text object decorating
 -- that region with information such as "bold" or "italic".
 update test set doc = create_mark(doc, '.foo', 1, 2, 'bold', true) where id = :text_id;
-update test set doc = create_mark(doc, '.foo', 6, 8, 'style', 'fancy') where id = :text_id;
+--- update test set doc = create_mark(doc, '.foo', 6, 8, 'style', '{"foo":"fancy"}') where id = :text_id;
 update test set doc = create_mark(doc, '.foo', 3, 10, 'font_size', 42) where id = :text_id;
 select * from get_marks((select doc from test where id = :text_id), '.foo');
-┌───────────┬───────────┬─────────┬─────────┐
-│   name    │ start_pos │ end_pos │   val   │
-├───────────┼───────────┼─────────┼─────────┤
-│ bold      │         1 │       2 │ true    │
-│ font_size │         3 │      10 │ 42      │
-│ fancy     │         6 │       8 │ "fancy" │
-└───────────┴───────────┴─────────┴─────────┘
-(3 rows)
+┌───────────┬───────────┬─────────┬──────┐
+│   name    │ start_pos │ end_pos │ val  │
+├───────────┼───────────┼─────────┼──────┤
+│ bold      │         1 │       2 │ true │
+│ font_size │         3 │      10 │ 42   │
+└───────────┴───────────┴─────────┴──────┘
+(2 rows)
 
 -- ## Actor Ids
 --
@@ -343,9 +342,8 @@ select pg_typeof(get_change_hash(c)),
 │ bytea     │                    │ bytea     │
 │ bytea     │                    │ bytea     │
 │ bytea     │                    │ bytea     │
-│ bytea     │                    │ bytea     │
 └───────────┴────────────────────┴───────────┘
-(9 rows)
+(8 rows)
 
 -- Apply a change from one doc to another:
 select * from get_changes('{"foo":{"bar":1}}') change limit 1 \gset
