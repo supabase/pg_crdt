@@ -13,14 +13,20 @@ set client_min_messages = 'WARNING'; -- pragma:hide
 create extension if not exists automerge;
 set search_path to public,automerge;
 
+create table if not exists test (
+    id bigserial,
+    doc autodoc not null default '{}'
+    );
+
 -- ## Casting to/from jsonb
 --
 -- Automerge centers around a document object called
 -- `automerge.autodoc`.  An autodoc is a json object "like" container
 -- for (mostly) json like types. Documents can be created by casting
--- an initializing jsonb object to `autodoc`:
+-- an initializing a json/jsonb object to `autodoc`:
 
-select pg_typeof('{"foo":1}'::autodoc);
+insert into test (doc) values ('{"foo":1}') returning id \gset
+select pg_typeof(doc) from test where id = :id;
 
 -- An `autodoc` instance looks like a `bytea` type, which internally
 -- encodes the state of the document.  This casting operation supports
@@ -30,7 +36,7 @@ select pg_typeof('{"foo":1}'::autodoc);
 --
 -- You can cast back to `jsonb` as well:
 
-select '{"foo":1}'::autodoc::jsonb;
+select doc::jsonb from test where id = :id;
 
 -- Note that casting to jsonb is a potentially lossy operation, since
 -- autodoc support more types of values than jsonb does, such as text
@@ -51,74 +57,72 @@ select '{"foo":1}'::autodoc::jsonb;
 
 -- ### Integers
 
-select get_int('{"foo":1}', '.foo');
+insert into test (doc) values ('{"foo":1,"far":{"bar":[1,2,3]}}') returning id \gset
 
-select get_int('{"foo":{"bar":[1,2,3]}}', '.foo.bar[1]');
+select get_int(doc, '.foo') from test where id = :id;
 
-select put_int('{"foo":1}', '.bar', 2)::jsonb;
+select get_int(doc, '.far.bar[1]') from test where id = :id;
 
-select put_int('{"foo":{"bar":[1,2]}}', '.foo.bar[1]', 3, false)::jsonb;
+update test set doc = put_int(doc, '.fiz', 2) where id = :id returning doc::jsonb;
 
-select put_int('{"foo":{"bar":[1,2]}}', '.foo.bar[1]', 3, true)::jsonb;
+update test set doc = put_int(doc, '.far.bar[1]', 3, false) where id = :id returning doc::jsonb;
 
-select get_int('{"foo":1}', '.bar');
+update test set doc = put_int(doc, '.far.bar[1]', 3, true) where id = :id returning doc::jsonb;
 
 -- ### Strings
 
-select get_str('{"foo":"bar"}', '.foo');
+insert into test (doc) values ('{"foo":"fiz","bar":["one","two","three"]}') returning id \gset
 
-select get_str('{"foo":{"bar":["one","two","three"]}}', '.foo.bar[1]');
+select get_str(doc, '.foo') from test where id = :id;
 
-select put_str('{"foo":"bar"}', '.bing', 'bang')::jsonb;
+select get_str(doc, '.bar[1]') from test where id = :id;
 
-select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 'three', false)::jsonb;
+update test set doc = put_str(doc, '.bing', 'bang') where id = :id returning doc::jsonb;
 
-select put_str('{"foo":{"bar":["one","two"]}}', '.foo.bar[1]', 'three', true)::jsonb;
+update test set doc = put_str(doc, '.bar[1]', 'three', false) where id = :id returning doc::jsonb;
 
-select get_str('{"foo":"bar"}', '.bar');
+update test set doc = put_str(doc, '.bar[1]', 'three', true) where id = :id returning doc::jsonb;
 
 -- ### Doubles
 
-select get_double('{"pi":3.14159}', '.pi');
+insert into test (doc) values ('{"pi":3.14159,"foo":{"bar":[1.1,2.2,3.3]}}') returning id \gset
 
-select get_double('{"foo":{"bar":[1.1,2.2,3.3]}}', '.foo.bar[1]');
+select get_double(doc, '.pi') from test where id = :id;
 
-select put_double('{"pi":3.14159}', '.e', 2.71828)::jsonb;
+select get_double(doc, '.foo.bar[1]') from test where id = :id;
 
-select put_double('{"foo":{"bar":[1.1,2.2]}}', '.foo.bar[1]', 3.3, false)::jsonb;
+update test set doc = put_double(doc, '.e', 2.71828) where id = :id returning doc::jsonb;
 
-select put_double('{"foo":{"bar":[1.1,2.2]}}', '.foo.bar[1]', 3.3, true)::jsonb;
+update test set doc = put_double(doc, '.foo.bar[1]', 3.3, false) where id = :id returning doc::jsonb;
 
-select get_double('{"pi":3.14159}', '.e');
+update test set doc = put_double(doc, '.foo.bar[1]', 3.3, true) where id = :id returning doc::jsonb;
 
 -- ### Bools
 
-select get_bool('{"foo":true}', '.foo');
+insert into test (doc) values ('{"foo":true,"bar":[true,false,true]}') returning id \gset
 
-select get_bool('{"foo":{"bar":[true,false,true]}}', '.foo.bar[1]');
+select get_bool(doc, '.foo') from test where id = :id;
 
-select put_bool('{"foo":true}', '.foo', false)::jsonb;
+select get_bool(doc, '.bar[1]') from test where id = :id;
 
-select put_bool('{"foo":{"bar":[false,false,false]}}', '.foo.bar[1]', true)::jsonb;
+update test set doc = put_bool(doc, '.bar[1]', false) where id = :id returning doc::jsonb;
 
-select get_bool('{"foo":true}', '.bar');
+update test set doc = put_bool(doc, '.bar[1]', true) where id = :id returning doc::jsonb;
 
 -- ### Counters
 --
 -- NOTE: Counters have no jsonb input representation, on output they
 -- are represented as JSON integer.
 
-select put_counter('{}', '.bar', 1)::jsonb;
+insert into test (doc) values (put_counter('{}', '.bar', 1)) returning id \gset
 
-select get_counter(put_counter('{}', '.bar', 1), '.bar');
+select get_counter(doc, '.bar') from test where id = :id;
 
-select get_counter(inc_counter(put_counter('{}', '.bar', 1), '.bar'), '.bar');
+update test set doc = inc_counter(doc, '.bar') where id = :id returning doc::jsonb;
 
-select get_counter(inc_counter(put_counter('{}', '.bar', 1), '.bar', 2), '.bar');
+update test set doc = inc_counter(doc, '.bar', 2) where id = :id returning doc::jsonb;
 
-select get_counter(inc_counter(put_counter('{}', '.bar', 1), '.bar', -2), '.bar');
-
-select get_counter(put_counter('{}', '.bar', 1), '.foo');
+update test set doc = inc_counter(doc, '.bar', -2) where id = :id returning doc::jsonb;
 
 -- ### Text
 --
@@ -128,18 +132,20 @@ select get_counter(put_counter('{}', '.bar', 1), '.foo');
 -- NOTE: Text have no jsonb input representation, on output they are
 -- represented as JSON string.
 
-select put_text('{"foo":"bar"}', '.bing', 'bang')::jsonb;
+insert into test (doc) values (put_text('{}', '.foo', 'hello postgres')) returning id as text_id \gset
 
-select get_text(put_text('{"foo":[]}', '.foo[0]', 'bang'), '.foo[0]');
+select get_text(doc, '.foo') from test where id = :text_id;
 
-select splice_text(put_text('{"foo":"bar"}', '.bing', 'bang'), '.bing', 1, 3, 'ork')::jsonb;
+update test set doc = splice_text(doc, '.foo', 6, 14, 'world') where id = :text_id returning doc::jsonb;
 
 -- ### Marks
 --
 -- Marks are objects that span a region of a text object decorating
 -- that region with information such as "bold" or "italic".
 
-select * from get_marks(create_mark(put_text('{}', '.foo', 'bar'), '.foo', 0, 1, 'bold'), '.foo');
+update test set doc = create_mark(doc, '.foo', 0, 5, 'bold') where id = :text_id;
+
+select * from get_marks((select doc from test where id = :text_id), '.foo');
 
 -- ## Actor Ids
 --
@@ -180,9 +186,9 @@ select apply('{"baz":true}', :'change')::jsonb;
 
 -- Get a change hash, message and actor_id:
 
+select doc::jsonb from test;
+
 select pg_typeof(get_change_hash(c)),
        get_change_message(c),
        pg_typeof(get_actor_id(c))
-    from get_changes(
-        put_int(from_jsonb('{"foo":{"bar":1}}', 'making a foo bar'),
-                '.foo.baz', 2)) c;
+    from get_changes((select doc from test where id = :text_id)) c;

@@ -170,7 +170,7 @@ AS '$libdir/automerge', 'autodoc_create_mark'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_marks(doc autodoc, path text)
-RETURNS TABLE(name text, start_pos bigint, end_pos bigint)
+RETURNS TABLE(name text, start_pos bigint, end_pos bigint, val jsonb)
 AS '$libdir/automerge', 'autodoc_get_marks'
 LANGUAGE C STRICT;
 

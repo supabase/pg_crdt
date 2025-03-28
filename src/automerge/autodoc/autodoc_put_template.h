@@ -28,7 +28,7 @@ Datum FN(autodoc_put)(PG_FUNCTION_ARGS)
 		AMstackItem(&doc->stack,
 					AMcommit(doc->doc, AMstr(text_to_cstring(message)), NULL),
 					_abort_cb,
-					AMexpect(AM_VAL_TYPE_CHANGE_HASH));
+					NULL);
 	}
 
 	AUTODOC_RETURN(doc);
