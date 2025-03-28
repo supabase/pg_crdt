@@ -22,13 +22,12 @@ Datum autodoc_get_marks(PG_FUNCTION_ARGS) {
     Datum result;
 	JsonbValue jbv;
 
-    doc = AUTODOC_GETARG(0);
-
 	if (SRF_IS_FIRSTCALL())
         {
             MemoryContext oldcontext;
             funcctx = SRF_FIRSTCALL_INIT();
             oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+            doc = AUTODOC_GETARG(0);
             path = PG_GETARG_TEXT_PP(1);
             object = _autodoc_traverse_get_text(doc, AM_ROOT, text_to_cstring(path));
             objid = AMitemObjId(object);
@@ -42,9 +41,8 @@ Datum autodoc_get_marks(PG_FUNCTION_ARGS) {
 
             state->marks = AMstackItems(&doc->stack, AMmarks(doc->doc, objid, NULL), _abort_cb,
                                         AMexpect(AM_VAL_TYPE_MARK));
-
+            state->doc = doc;
             funcctx->max_calls = AMitemsSize(&state->marks);
-
             funcctx->user_fctx = state;
 
             tupdesc = CreateTemplateTupleDesc(4);
@@ -66,7 +64,7 @@ Datum autodoc_get_marks(PG_FUNCTION_ARGS) {
             AMitemToMark(item, &mark);
             bs = AMmarkName(mark);
 
-            value = AMstackItem(&doc->stack,
+            value = AMstackItem(&state->doc->stack,
                                 AMmarkValue(mark),
                                 _abort_cb,
                                 NULL);

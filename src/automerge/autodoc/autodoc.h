@@ -35,7 +35,8 @@ typedef struct autodoc_ChangesState {
 } autodoc_ChangesState;
 
 typedef struct autodoc_MarksState {
-     AMitems marks;
+    AMitems marks;
+    autodoc_Autodoc *doc;
 } autodoc_MarksState;
 
 /* Create a new autodoc datum. */

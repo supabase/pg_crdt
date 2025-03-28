@@ -164,9 +164,19 @@ RETURNS autodoc
 AS '$libdir/automerge', 'autodoc_splice_text'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION create_mark(doc autodoc, path text, start_pos bigint, end_pos bigint, name text)
+CREATE FUNCTION create_mark(doc autodoc, path text, start_pos bigint, end_pos bigint, name text, val bool)
 RETURNS autodoc
-AS '$libdir/automerge', 'autodoc_create_mark'
+AS '$libdir/automerge', 'autodoc_create_mark_bool'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION create_mark(doc autodoc, path text, start_pos bigint, end_pos bigint, name text, val text)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_create_mark_str'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION create_mark(doc autodoc, path text, start_pos bigint, end_pos bigint, name text, val int)
+RETURNS autodoc
+AS '$libdir/automerge', 'autodoc_create_mark_int'
 LANGUAGE C STRICT;
 
 CREATE FUNCTION get_marks(doc autodoc, path text)

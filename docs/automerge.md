@@ -301,14 +301,18 @@ update test set doc = splice_text(doc, '.foo', 6, 14, 'world') where id = :text_
 Marks are objects that span a region of a text object decorating
 that region with information such as "bold" or "italic".
 ``` postgres-console
-update test set doc = create_mark(doc, '.foo', 0, 5, 'bold') where id = :text_id;
+update test set doc = create_mark(doc, '.foo', 1, 2, 'bold', true) where id = :text_id;
+update test set doc = create_mark(doc, '.foo', 6, 8, 'style', 'fancy') where id = :text_id;
+update test set doc = create_mark(doc, '.foo', 3, 10, 'font_size', 42) where id = :text_id;
 select * from get_marks((select doc from test where id = :text_id), '.foo');
-┌──────┬───────────┬─────────┬──────┐
-│ name │ start_pos │ end_pos │ val  │
-├──────┼───────────┼─────────┼──────┤
-│ bold │         0 │       5 │ true │
-└──────┴───────────┴─────────┴──────┘
-(1 row)
+┌───────────┬───────────┬─────────┬─────────┐
+│   name    │ start_pos │ end_pos │   val   │
+├───────────┼───────────┼─────────┼─────────┤
+│ bold      │         1 │       2 │ true    │
+│ font_size │         3 │      10 │ 42      │
+│ fancy     │         6 │       8 │ "fancy" │
+└───────────┴───────────┴─────────┴─────────┘
+(3 rows)
 
 ```
 ## Actor Ids
@@ -319,10 +323,8 @@ and set with `get_actor_id(autodoc)` and `set_actor_id(autodoc,
 uuid)`:
 
 ``` postgres-console
-select get_actor_id(
-    set_actor_id('{"foo":1}',
-    '97131c66344c48e8b93249aabff6b2f2')
-    );
+update test set doc = set_actor_id(doc, '97131c66344c48e8b93249aabff6b2f2') where id = :text_id;
+select get_actor_id(doc) from test where id = :text_id;
 ┌────────────────────────────────────────────────────────────────────┐
 │                            get_actor_id                            │
 ├────────────────────────────────────────────────────────────────────┤
@@ -331,37 +333,40 @@ select get_actor_id(
 (1 row)
 
 ```
-### Timestamp
-
-TODO
-
 ## Merging documents
 
 Documents can be merged together.  The second argument document is
 merged into the first:
 ``` postgres-console
-select merge('{"foo":1}', '{"bar":2}')::jsonb;
-┌──────────────────────┐
-│        merge         │
-├──────────────────────┤
-│ {"bar": 2, "foo": 1} │
-└──────────────────────┘
-(1 row)
-
+insert into test (doc) values (
+    merge((select doc from test where id = :id), (select doc from test where id = :text_id))
+    ) returning id as merge_id \gset
 ```
 ## Getting Changes
 
 All changes can be retrieved with the `get_changes()`
 function:
 
+Get a change hash, message and actor_id:
 ``` postgres-console
-select pg_typeof(c) from get_changes('{"foo":{"bar":1}}') c;
-┌────────────┐
-│ pg_typeof  │
-├────────────┤
-│ autochange │
-└────────────┘
-(1 row)
+select pg_typeof(get_change_hash(c)),
+       get_change_message(c),
+       pg_typeof(get_actor_id(c))
+    from get_changes((select doc from test where id = :merge_id)) c;
+┌───────────┬────────────────────┬───────────┐
+│ pg_typeof │ get_change_message │ pg_typeof │
+├───────────┼────────────────────┼───────────┤
+│ bytea     │ put_counter        │ bytea     │
+│ bytea     │                    │ bytea     │
+│ bytea     │                    │ bytea     │
+│ bytea     │                    │ bytea     │
+│ bytea     │                    │ bytea     │
+│ bytea     │                    │ bytea     │
+│ bytea     │                    │ bytea     │
+│ bytea     │                    │ bytea     │
+│ bytea     │                    │ bytea     │
+└───────────┴────────────────────┴───────────┘
+(9 rows)
 
 ```
 Apply a change from one doc to another:
@@ -376,9 +381,9 @@ select apply('{"baz":true}', :'change')::jsonb;
 (1 row)
 
 ```
-Get a change hash, message and actor_id:
+The final state of the test table:
 ``` postgres-console
-select doc::jsonb from test;
+select doc::jsonb from test order by id;
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                                    doc                                    │
 ├───────────────────────────────────────────────────────────────────────────┤
@@ -389,20 +394,8 @@ select doc::jsonb from test;
 │ {"bar": [true, true, false, false, true], "foo": true}                    │
 │ {"bar": 2}                                                                │
 │ {"foo": "hello world"}                                                    │
+│ {"bar": 2, "foo": "hello world"}                                          │
 └───────────────────────────────────────────────────────────────────────────┘
-(7 rows)
-
-select pg_typeof(get_change_hash(c)),
-       get_change_message(c),
-       pg_typeof(get_actor_id(c))
-    from get_changes((select doc from test where id = :text_id)) c;
-┌───────────┬────────────────────┬───────────┐
-│ pg_typeof │ get_change_message │ pg_typeof │
-├───────────┼────────────────────┼───────────┤
-│ bytea     │                    │ bytea     │
-│ bytea     │                    │ bytea     │
-│ bytea     │                    │ bytea     │
-└───────────┴────────────────────┴───────────┘
-(3 rows)
+(8 rows)
 
 ```

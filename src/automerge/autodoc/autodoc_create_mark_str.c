@@ -3,11 +3,11 @@
 AMitem *_autodoc_traverse_get_text(autodoc_Autodoc *doc,
                                    const AMobjId *container, const char *expr);
 
-PG_FUNCTION_INFO_V1(autodoc_create_mark);
-Datum autodoc_create_mark(PG_FUNCTION_ARGS) {
+PG_FUNCTION_INFO_V1(autodoc_create_mark_str);
+Datum autodoc_create_mark_str(PG_FUNCTION_ARGS) {
   autodoc_Autodoc *doc;
-  text *path, *name;
-  AMitem *item, *val;
+  text *path, *name, *val;
+  AMitem *item, *valitem;
   size_t start, end;
   char *pathstr;
   AMvalType valtype;
@@ -19,6 +19,7 @@ Datum autodoc_create_mark(PG_FUNCTION_ARGS) {
   start = PG_GETARG_INT64(2);
   end = PG_GETARG_INT64(3);
   name = PG_GETARG_TEXT_PP(4);
+  val = PG_GETARG_TEXT_PP(5);
 
   pathstr = text_to_cstring(path);
   item = _autodoc_traverse_get_text(doc, AM_ROOT, pathstr);
@@ -37,12 +38,15 @@ Datum autodoc_create_mark(PG_FUNCTION_ARGS) {
     ereport(ERROR,
             errmsg("Path %s is not an automerge text.", text_to_cstring(path)));
 
-  val = AMstackItem(&doc->stack, AMitemFromBool(true), _abort_cb,
-                    AMexpect(AM_VAL_TYPE_BOOL));
+  valitem = AMstackItem(&doc->stack,
+                        AMitemFromStr(AMbytes((const uint8_t *)VARDATA_ANY(val),
+                                              VARSIZE_ANY_EXHDR(val))),
+                        _abort_cb,
+                        AMexpect(AM_VAL_TYPE_STR));
 
   AMstackItem(&doc->stack,
               AMmarkCreate(doc->doc, itemid, start, end, AM_MARK_EXPAND_BOTH,
-                           AMstr(text_to_cstring(name)), val),
+                           AMstr(text_to_cstring(name)), valitem),
               _abort_cb, AMexpect(AM_VAL_TYPE_VOID));
 
   AUTODOC_RETURN(doc);
