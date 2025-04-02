@@ -1,5 +1,32 @@
 site_name: "pg_crdt"
 docs_dir: docs
 site_dir: site
+site_url: https://supabase.github.io/pg_crdt
+site_description: A PostgreSQL extension for CRDTs
+copyright: Copyright &copy; Supabase
+repo_name: supabase/pg_crdt
+repo_url: https://github.com/supabase/pg_crdt
+
 theme:
-  name: mkdocs
+    name: "material"
+    favicon: "assets/favicon.ico"
+    logo: "assets/favicon.ico"
+    palette:
+        scheme: slate
+        primary: green
+        accent: green
+
+extra_css:
+    - stylesheets/extra.css
+
+extra:
+    social:
+        - icon: fontawesome/brands/twitter
+          link: https://x.com/supabase
+          name: Supabase on Twitter
+        - icon: fontawesome/brands/reddit
+          link: https://reddit.com/r/supabase
+          name: Supabase on Reddit
+        - icon: fontawesome/brands/github
+          link: https://github.com/supabase/pg_crdt
+          name: pg_crdt on GitHub
