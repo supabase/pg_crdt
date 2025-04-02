@@ -1,0 +1,45 @@
+name: pg_crdt tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Start custom Docker container
+        run: |
+          docker compose build --progress=plain && docker compose up -d
+
+      - name: Wait for container to be ready
+        run: sleep 10
+
+      - name: Run make installcheck in container
+        run: docker exec pg_w_pg_crdt make installcheck
+
+      - name: Doctestify results
+        run: docker exec pg_w_pg_crdt python3 doctestify.py results/automerge.out
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install MkDocs
+        run: pip install mkdocs
+
+      - name: Build Documentation
+        run: mkdocs build
+
+      - name: Deploy Documentation to GitHub Pages
+        run: mkdocs gh-deploy --force
+
+      - name: Clean up container
+        if: always()
+        run: docker stop pg_w_pg_crdt && docker rm pg_w_pg_crdt
+
+        

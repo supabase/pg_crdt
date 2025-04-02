@@ -1,0 +1,46 @@
+set client_min_messages = 'WARNING'; -- pragma:hide
+create extension if not exists automerge;
+set search_path to public,automerge;
+select '{'::autodoc;
+ERROR:  invalid input syntax for type json
+LINE 1: select '{'::autodoc;
+               ^
+DETAIL:  The input string ended unexpectedly.
+CONTEXT:  JSON data, line 1: {
+select '}'::autodoc;
+ERROR:  Error; unable to parse chunk: not enough data.
+
+LINE 1: select '}'::autodoc;
+               ^
+select '[]'::autodoc;
+ERROR:  Error; unable to parse chunk: not enough data.
+
+LINE 1: select '[]'::autodoc;
+               ^
+select '42'::autodoc;
+ERROR:  Error; unable to parse chunk: not enough data.
+
+LINE 1: select '42'::autodoc;
+               ^
+select '"foo"'::autodoc;
+ERROR:  Error; unable to parse chunk: failed to parse header: Invalid magic bytes.
+
+LINE 1: select '"foo"'::autodoc;
+               ^
+select get_int('{"foo": [1]}', 'foo');
+ERROR:  Root path must start with .
+select get_int('{"foo": [1]}', '.foo[1]');
+ERROR:  Error; Invalid pos 1.
+
+select get_int('{"foo": {"bar":[1]}}', '.foo.bar');
+ERROR:  No value found for path: 
+
+select get_int('{"foo": {"bar":[1]}}', '.foo.bar.');
+ERROR:  Container for key token . must be map.
+
+select get_int('{"foo": {"bar":[1]}}', '.foo.bar.[0]');
+ERROR:  Container for key token .[0] must be map.
+
+select get_int('{"foo": {"bar":[1]}}', '.foo.bar[baz]');
+ERROR:  Error: Invalid array index 'baz'
+

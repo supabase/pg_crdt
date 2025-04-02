@@ -1,0 +1,6 @@
+comment = 'Postgres Automerge'
+default_version = '0.0.1'
+module_pathname = '$libdir/automerge'
+relocatable = false
+superuser = false
+schema = automerge

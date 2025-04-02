@@ -16,4 +16,11 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: sdb
+      POSTGRES_DB: db
+    cap_add:
+      - SYS_PTRACE
+    tty: false
+    volumes:
+      - ./sql:/home/app/sql
+      - ./results:/home/app/results
+      - ./expected:/home/app/expected
