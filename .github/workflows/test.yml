@@ -2,7 +2,11 @@ name: pg_crdt tests
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
   test:
