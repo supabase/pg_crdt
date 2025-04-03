@@ -34,7 +34,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install MkDocs
-        run: pip install mkdocs
+        run: pip install mkdocs mkdocs-material
 
       - name: Build Documentation
         run: mkdocs build
