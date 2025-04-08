@@ -1,24 +1,24 @@
-[![pg_crdt tests](https://github.com/michelp/pg_crdt/actions/workflows/test.yml/badge.svg)](https://github.com/michelp/pg_crdt/actions/workflows/test.yml)
+[![pg_crdt tests](https://github.com/supabase/pg_crdt/actions/workflows/test.yml/badge.svg)](https://github.com/supabase/pg_crdt/actions/workflows/test.yml)
 
 # pg_crdt (experimental)
 
-`pg_crdt` is an experimental extension adding support for
-conflict-free replicated data types (CRDTs) in Postgres.
+`pg_crdt` is an experimental extension adding support for conflict-free replicated data types (CRDTs) in Postgres.
 
-CRDTs are decentralized data structures that can safely be replicated
-and synchronized across multiple computers/nodes. They are the
-enabling technology for collaborative editing applications like
-[Notion](https://www.notion.so).
+Documentation:
 
-## Why
+- [Introduction](https://supabase.github.io/pg_crdt/)
+- [Automerge](https://supabase.github.io/pg_crdt/automerge/)
 
-Our goal was to evaluate if we could leverage a Postgres-backed CRDT
-and Supabase's existing
-[Realtime](https://supabase.com/docs/guides/api#realtime-api-overview)
-API for change-data-capture to enable development of collaborative
-apps on the [Supabase](https://supabase.com) platform.
+## What is a CRDT?
 
-The `pg_crdt` extension is a proof-of-concept that wraps rust's
-[automerge](https://crates.io/crates/automerge) library.  The
-extension supports creating a new `automerge.autodoc`. For a full list
-of available methods see [the Documentation](https://supabase.github.io/pg_crdt/).
+CRDTs are decentralized data structures that can safely be replicated and synchronized across multiple computers/nodes. They are the enabling technology for collaborative applications like Notion and Figma.
+
+## Architecture
+
+The [original implementation](https://supabase.com/blog/postgres-crdt) of this library was relatively naive - we used the Automerge's Rust libary to implement a CRDT as a data type. This had a major limitation: frequently updated CRDTs produce a lot of WAL and dead tuples.
+
+The new implementation improves on this by taking advantage of an advanced in-memory feature in Postgres called an "expanded datum", which can be used for complex in-memory objects.  This is described in some detail here:
+
+[https://www.postgresql.org/docs/current/storage-toast.html#STORAGE-TOAST-INMEMORY](https://www.postgresql.org/docs/current/storage-toast.html#STORAGE-TOAST-INMEMORY)
+
+There's still work to be done: a more fully fleshed out example application, better change aggregate functions to apply large sets of changes, and explore the ideas of having Postgres use the sync API to sync with other peers.
