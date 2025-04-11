@@ -7,11 +7,22 @@
 -- This documentation is also tests for the code, the examples below
 -- show the literal output of these statements from Postgres.
 --
+-- The `automerge` extension is the first (of hopefully several) CRDT
+-- libraries provided by the `pg_crdt` package.  The [Automerge
+-- Library](https://automerge.org/) provides a json-like document
+-- format which allows concurrent changes on different devices to be
+-- merged automatically without requiring any central server.  Changes
+-- from different servers and sources can be applied to documents to
+-- bring them up to date, or whole documents can be "merged" to
+-- combine them without conflicts.
+--
 -- Some setup to make sure the extension is installed.
 
 set client_min_messages = 'WARNING'; -- pragma:hide
 create extension if not exists automerge;
 set search_path to public,automerge;
+
+-- Let's make a test table to contain our automerge documents.
 
 create table if not exists test (
     id bigserial,
@@ -56,6 +67,10 @@ select doc::jsonb from test where id = :id;
 -- and array items are indexed with the `[]` operator:
 
 -- ### Integers
+--
+-- Autodoc integers are mapped to postgres 64-bit signed integers
+-- (`bigint`).  They can be initialized from jsonb using json
+-- integers, or put directly into an existing autdoc.
 
 insert into test (doc) values ('{"foo":1,"far":{"bar":[1,2,3]}}') returning id \gset
 
@@ -65,11 +80,20 @@ select get_int(doc, '.far.bar[1]') from test where id = :id;
 
 update test set doc = put_int(doc, '.fiz', 2) where id = :id returning doc::jsonb;
 
+-- `put_int` (and other `put_` functions) take an optional boolean
+-- argument `insert`.  If true, the value will be inserted after the
+-- provided position into an array instead of overwriting it.  If the
+-- value is not an array, the `insert` argument is ignored:
+
 update test set doc = put_int(doc, '.far.bar[1]', 3, false) where id = :id returning doc::jsonb;
 
 update test set doc = put_int(doc, '.far.bar[1]', 3, true) where id = :id returning doc::jsonb;
 
 -- ### Strings
+--
+-- Automerge strings map to Postgres `text` type.  They can be
+-- initialized from jsonb strings or using the same get/put API as
+-- integers:
 
 insert into test (doc) values ('{"foo":"fiz","bar":["one","two","three"]}') returning id \gset
 
@@ -84,6 +108,9 @@ update test set doc = put_str(doc, '.bar[1]', 'three', false) where id = :id ret
 update test set doc = put_str(doc, '.bar[1]', 'three', true) where id = :id returning doc::jsonb;
 
 -- ### Doubles
+--
+-- Doubles map to postgres `double precision` type, and can be
+-- initialized from jsonb decimal numbers:
 
 insert into test (doc) values ('{"pi":3.14159,"foo":{"bar":[1.1,2.2,3.3]}}') returning id \gset
 
@@ -98,6 +125,8 @@ update test set doc = put_double(doc, '.foo.bar[1]', 3.3, false) where id = :id 
 update test set doc = put_double(doc, '.foo.bar[1]', 3.3, true) where id = :id returning doc::jsonb;
 
 -- ### Bools
+--
+-- Bools map to the Postgres `bool` type:
 
 insert into test (doc) values ('{"foo":true,"bar":[true,false,true]}') returning id \gset
 
@@ -110,6 +139,9 @@ update test set doc = put_bool(doc, '.bar[1]', false) where id = :id returning d
 update test set doc = put_bool(doc, '.bar[1]', true) where id = :id returning doc::jsonb;
 
 -- ### Counters
+--
+-- Automerge counters are like integers, but can be concurrently
+-- updated and merged without losing count.
 --
 -- NOTE: Counters have no jsonb input representation, on output they
 -- are represented as JSON integer.
@@ -127,7 +159,9 @@ update test set doc = inc_counter(doc, '.bar', -2) where id = :id returning doc:
 -- ### Text
 --
 -- Automerge Text objects are like strings but have support for
--- changing ("splicing") text in and out efficiently.
+-- changing ("splicing") text in and out efficiently.  Compared to
+-- strings which are updated atomically, text values are internally
+-- represented by an array of characters and can be modified in place.
 --
 -- NOTE: Text have no jsonb input representation, on output they are
 -- represented as JSON string.
@@ -153,8 +187,9 @@ select * from get_marks((select doc from test where id = :text_id), '.foo');
 -- Automerge supports a notion of "Actor Ids" that identify the actors
 -- making concurrent changes to documents.  This UUID data can be get
 -- and set with `get_actor_id(autodoc)` and `set_actor_id(autodoc,
--- uuid)`:
---
+-- uuid)`.  Postgres stores the last set actor id for a document which
+-- gets preserved for future changes.  If no actor id is set,
+-- automerge generates a random one:
 
 update test set doc = set_actor_id(doc, '97131c66344c48e8b93249aabff6b2f2') where id = :text_id;
 
@@ -162,8 +197,8 @@ select get_actor_id(doc) from test where id = :text_id;
 
 -- ## Merging documents
 --
--- Documents can be merged together.  The second argument document is
--- merged into the first:
+-- Documents can be merged together without conflict.  The second
+-- argument document is merged into the first:
 
 insert into test (doc) values (
     merge((select doc from test where id = :id), (select doc from test where id = :text_id))
@@ -171,8 +206,7 @@ insert into test (doc) values (
 
 -- ## Getting Changes
 --
--- All changes can be retrieved with the `get_changes()`
--- function:
+-- All changes can be retrieved with the `get_changes()` function:
 --
 -- Get a change hash, message and actor_id:
 
